@@ -1,6 +1,6 @@
 # Person A — full execution plan
 
-Owner: **Medhansh (A: data and decisions)**. Baseline: 8 November 2026. Budget: eight three-hour packages, **24 active hours**, within the team's 72 person-hours. This is an implementation checklist, not evidence that functionality exists. The folder markers and planning documents are the only setup completed so far.
+Owner: **Medhansh (A: data and decisions)**. Baseline: 8 November 2026. Budget: eight three-hour packages, **24 active hours**, within the team's 72 person-hours. This is an implementation checklist, not evidence that functionality exists. A-owned backend implementation now exists; see [the handoff](person-a-handoff.md) for actual checks and pending B/C integration gates. The package sequence and estimates below remain the planning baseline.
 
 ## 1. Understand the whole product
 

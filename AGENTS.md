@@ -2,11 +2,11 @@
 
 ## Purpose and current state
 
-Build **Counterparty Guard**, the NEAR AI Security & Defense counterparty service described in [PLAN.md](PLAN.md). The repository currently contains planning documents only. Proposed paths and commands below are targets for implementation, not proof that tools or application code already exist.
+Build **Counterparty Guard**, the NEAR AI Security & Defense counterparty service described in [PLAN.md](PLAN.md). Person A backend code is now present. Read `docs/person-a-handoff.md` for implemented scope and actual checks. B/C-owned functionality and cross-language/chain integration gates remain pending until their PRs land. Proposed paths below do not imply every component exists.
 
 The user requested a detailed plan and project instructions split equally across three people. That request authorizes these documents. Begin application implementation when the user requests it; do not interpret a planning-only turn as a request to deploy contracts or spend funds.
 
-Medhansh is Person A. The detailed implementation checklist is in `docs/person-a-plan.md`. The initial folder setup contains planning markers, not working application packages. Use `main` as the default branch and neutral names such as `feat/a-foundation` for implementation branches. Keep repository text and commit metadata in the project's and contributors' names without assistant branding or generated co-author trailers.
+Medhansh is Person A. The detailed implementation checklist is in `docs/person-a-plan.md`. A-owned packages contain implementation; B/C folder markers remain for their contributors. Use `main` as the default branch and neutral names such as `feat/a-foundation` for implementation branches. Keep repository text and commit metadata in the project's and contributors' names without assistant branding or generated co-author trailers.
 
 ## Product boundary
 

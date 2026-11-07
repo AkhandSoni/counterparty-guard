@@ -1,7 +1,7 @@
-# packages/providers
+# Receiver providers
 
-Owner: **A**.
+Owner: **A**. Implemented fixture, bounded cache, NEAR RPC and NearBlocks v3 adapters.
 
-Normalized RPC/indexer/fixture inputs with retained provenance and bounded coverage.
+Use `FixtureProvider` for labelled deterministic data. `LiveReceiverProvider` requires fresh finalized RPC state and makes missing optional indexed history explicit. Required failures propagate without a permit; live activity is not automatically treated as independent.
 
-Status: planning marker only; no implementation or passing tests are implied. See [the implementation plan](../../docs/person-a-plan.md) and the root ownership rules before adding code.
+See [source interfaces, bounds, provenance and verification](../../docs/sources.md). Run provider tests from the root with `pnpm exec vitest run packages/providers/src/providers.test.ts`.

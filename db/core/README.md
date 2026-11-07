@@ -1,7 +1,7 @@
-# db/core
+# Core migrations
 
 Owner: **A**.
 
-Core SQL migrations, integrated through one ordered migration manifest with report migrations.
+`001_initial.sql` creates core identity/evidence/check/permit/execution/history tables. The API applies [the ordered manifest](../migrations.json), spanning core and future C report migrations, with applied IDs/positions/checksums. Append migrations; never rewrite applied SQL.
 
-Status: planning marker only; no implementation or passing tests are implied. See [the implementation plan](../../docs/person-a-plan.md) and the root ownership rules before adding code.
+See [API persistence](../../docs/api.md) and [operations](../../docs/runbook.md).

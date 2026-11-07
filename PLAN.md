@@ -1,6 +1,6 @@
 # Counterparty Guard — implementation plan
 
-Status: planning only; no application or contract has been implemented.
+Status: Person A backend implementation is available on `feat/a-core`; B/C implementations and cross-owner integration gates remain pending. No contracts or payment execution are claimed. See [the Person A handoff](docs/person-a-handoff.md) for actual validation and remaining dependencies.
 
 Planning date: 8 November 2026. Working name: **Counterparty Guard**.
 

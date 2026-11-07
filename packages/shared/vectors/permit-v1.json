@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "status": "TypeScript generated; Rust comparison pending Person B review",
+  "vectors": [
+    {
+      "name": "transfer-zero-allow",
+      "signed": {
+        "payload": {
+          "domain": "CounterpartyGuard/Permit",
+          "version": 1,
+          "network": "sandbox",
+          "deployment_instance_id": "1111111111111111111111111111111111111111111111111111111111111111",
+          "vault_id": "vault.testnet",
+          "agent_account_id": "agent.testnet",
+          "agent_public_key": "ed25519:5dQsnfbtkDvWurViaXb96Cff1PNzRzxB7tSsaukEt6jn",
+          "action": {
+            "kind": "transfer_near",
+            "receiver_id": "receiver.testnet",
+            "amount_yocto": "0"
+          },
+          "policy_revision": "1",
+          "blocklist_revision": "7",
+          "evidence_snapshot_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+          "verdict": "allow",
+          "nonce": "3333333333333333333333333333333333333333333333333333333333333333",
+          "issued_at": 1800000000000,
+          "expires_at": 1800000120000
+        },
+        "permit_hash": "7658c8e99827e9de7a906aee1471db7f7aeaeb9f7dabe1fb88ff44304c66c3bd",
+        "signature_base64": "caj+O8PlXJeuFcRkeBqg4oEtVdATodPYje2DYOXW0CWxdQy0YFwS95azY7c+J+5OU+TFIF+43kWKE/KSpM5BDg==",
+        "scorer_public_key": "ed25519:nhKBbonP7y5MrrCU4KEzgkfPrc1R3eJUwh9rDfi2z3y"
+      },
+      "encoded_hex": "18000000436f756e746572706172747947756172642f5065726d697401000011111111111111111111111111111111111111111111111111111111111111110d0000007661756c742e746573746e65740d0000006167656e742e746573746e657444c2a7321f4a0a1410f6243ed13ebd3cf75c52f744fda6854804cf73a7cbe48d001000000072656365697665722e746573746e65740000000000000000000000000000000001000000000000000700000000000000222222222222222222222222222222222222222222222222222222222222222200333333333333333333333333333333333333333333333333333333333333333300505c18a3010000c0245e18a3010000",
+      "signing_message_hex": "436f756e746572706172747947756172642f5065726d69745369676e61747572652f7631007658c8e99827e9de7a906aee1471db7f7aeaeb9f7dabe1fb88ff44304c66c3bd"
+    },
+    {
+      "name": "transfer-u128-max-warn",
+      "signed": {
+        "payload": {
+          "domain": "CounterpartyGuard/Permit",
+          "version": 1,
+          "network": "sandbox",
+          "deployment_instance_id": "1111111111111111111111111111111111111111111111111111111111111111",
+          "vault_id": "vault.testnet",
+          "agent_account_id": "agent.testnet",
+          "agent_public_key": "ed25519:5dQsnfbtkDvWurViaXb96Cff1PNzRzxB7tSsaukEt6jn",
+          "action": {
+            "kind": "transfer_near",
+            "receiver_id": "receiver.testnet",
+            "amount_yocto": "340282366920938463463374607431768211455"
+          },
+          "policy_revision": "1",
+          "blocklist_revision": "7",
+          "evidence_snapshot_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+          "verdict": "warn",
+          "nonce": "3333333333333333333333333333333333333333333333333333333333333333",
+          "issued_at": 1800000000000,
+          "expires_at": 1800000120000
+        },
+        "permit_hash": "86243ef27578aa94595310dd799bcfa4dde4e6fba058c80b5d15800d39148ffb",
+        "signature_base64": "m6RNCzyPZphC1rwr/SGvgmQZGn1RWKH18/BeBDU8nB6pWXlc5YP/6LJJRD2ClnWxLBWkQ7JSYU+rVaP/ekYgBA==",
+        "scorer_public_key": "ed25519:nhKBbonP7y5MrrCU4KEzgkfPrc1R3eJUwh9rDfi2z3y"
+      },
+      "encoded_hex": "18000000436f756e746572706172747947756172642f5065726d697401000011111111111111111111111111111111111111111111111111111111111111110d0000007661756c742e746573746e65740d0000006167656e742e746573746e657444c2a7321f4a0a1410f6243ed13ebd3cf75c52f744fda6854804cf73a7cbe48d001000000072656365697665722e746573746e6574ffffffffffffffffffffffffffffffff01000000000000000700000000000000222222222222222222222222222222222222222222222222222222222222222201333333333333333333333333333333333333333333333333333333333333333300505c18a3010000c0245e18a3010000",
+      "signing_message_hex": "436f756e746572706172747947756172642f5065726d69745369676e61747572652f76310086243ef27578aa94595310dd799bcfa4dde4e6fba058c80b5d15800d39148ffb"
+    },
+    {
+      "name": "call-raw-args-allow",
+      "signed": {
+        "payload": {
+          "domain": "CounterpartyGuard/Permit",
+          "version": 1,
+          "network": "sandbox",
+          "deployment_instance_id": "1111111111111111111111111111111111111111111111111111111111111111",
+          "vault_id": "vault.testnet",
+          "agent_account_id": "agent.testnet",
+          "agent_public_key": "ed25519:5dQsnfbtkDvWurViaXb96Cff1PNzRzxB7tSsaukEt6jn",
+          "action": {
+            "kind": "contract_call",
+            "receiver_id": "fixture.testnet",
+            "method_name": "record",
+            "args_base64": "eyAibWVtbyIgOiAiaGVsbG8iIH0=",
+            "attached_deposit_yocto": "1",
+            "gas_tgas": 30
+          },
+          "policy_revision": "1",
+          "blocklist_revision": "7",
+          "evidence_snapshot_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+          "verdict": "allow",
+          "nonce": "3333333333333333333333333333333333333333333333333333333333333333",
+          "issued_at": 1800000000000,
+          "expires_at": 1800000120000
+        },
+        "permit_hash": "ffd6bfe3fe27d627d2c09546fd3d7b116ed408dda45e2eb64bbeb7c8ecb62526",
+        "signature_base64": "rgMVLGBS/sakFeW6rqOVvpVkLm2kURtdpkbTUSK0d04Us5/LOWOkdFYVN8zuNn+93/np2HXrnbOV/8sg87rACw==",
+        "scorer_public_key": "ed25519:nhKBbonP7y5MrrCU4KEzgkfPrc1R3eJUwh9rDfi2z3y"
+      },
+      "encoded_hex": "18000000436f756e746572706172747947756172642f5065726d697401000011111111111111111111111111111111111111111111111111111111111111110d0000007661756c742e746573746e65740d0000006167656e742e746573746e657444c2a7321f4a0a1410f6243ed13ebd3cf75c52f744fda6854804cf73a7cbe48d010f000000666978747572652e746573746e6574060000007265636f7264140000007b20226d656d6f22203a202268656c6c6f22207d010000000000000000000000000000001e0000000000000001000000000000000700000000000000222222222222222222222222222222222222222222222222222222222222222200333333333333333333333333333333333333333333333333333333333333333300505c18a3010000c0245e18a3010000",
+      "signing_message_hex": "436f756e746572706172747947756172642f5065726d69745369676e61747572652f763100ffd6bfe3fe27d627d2c09546fd3d7b116ed408dda45e2eb64bbeb7c8ecb62526"
+    },
+    {
+      "name": "call-empty-warn",
+      "signed": {
+        "payload": {
+          "domain": "CounterpartyGuard/Permit",
+          "version": 1,
+          "network": "testnet",
+          "deployment_instance_id": "1111111111111111111111111111111111111111111111111111111111111111",
+          "vault_id": "vault.testnet",
+          "agent_account_id": "agent.testnet",
+          "agent_public_key": "ed25519:5dQsnfbtkDvWurViaXb96Cff1PNzRzxB7tSsaukEt6jn",
+          "action": {
+            "kind": "contract_call",
+            "receiver_id": "fixture.testnet",
+            "method_name": "record",
+            "args_base64": "",
+            "attached_deposit_yocto": "0",
+            "gas_tgas": 300
+          },
+          "policy_revision": "1",
+          "blocklist_revision": "7",
+          "evidence_snapshot_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+          "verdict": "warn",
+          "nonce": "3333333333333333333333333333333333333333333333333333333333333333",
+          "issued_at": 1800000000000,
+          "expires_at": 1800000120000
+        },
+        "permit_hash": "0d70f7708b2421efbe4cedfe6b7c381b69f053efa5baca37a0a7cb52a20398c7",
+        "signature_base64": "5sLPPEiL7Jknh4N20cyY4WpHLQkuTvD6qLlXnIBxxqdYrCYDpAArdvQpr1KUgKWroKUVW8jepvxnqUnuupunDg==",
+        "scorer_public_key": "ed25519:nhKBbonP7y5MrrCU4KEzgkfPrc1R3eJUwh9rDfi2z3y"
+      },
+      "encoded_hex": "18000000436f756e746572706172747947756172642f5065726d697401000111111111111111111111111111111111111111111111111111111111111111110d0000007661756c742e746573746e65740d0000006167656e742e746573746e657444c2a7321f4a0a1410f6243ed13ebd3cf75c52f744fda6854804cf73a7cbe48d010f000000666978747572652e746573746e6574060000007265636f726400000000000000000000000000000000000000002c0100000000000001000000000000000700000000000000222222222222222222222222222222222222222222222222222222222222222201333333333333333333333333333333333333333333333333333333333333333300505c18a3010000c0245e18a3010000",
+      "signing_message_hex": "436f756e746572706172747947756172642f5065726d69745369676e61747572652f7631000d70f7708b2421efbe4cedfe6b7c381b69f053efa5baca37a0a7cb52a20398c7"
+    }
+  ]
+}

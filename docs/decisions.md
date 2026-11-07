@@ -37,3 +37,21 @@ Impact: evidence persistence precedes permit release. Treat uncertain executions
 | B/C review accounts and repository protections | All | Before parallel feature work | Verified handles, available rules, real required checks |
 
 For subsequent entries include context, decision, owner/reviewer, alternatives relevant to the tradeoff, interface or migration impact, validation evidence, and superseded decision IDs.
+
+## D005 — Person A implementation and public repository (8 November 2026)
+
+Accepted at the user's request: implement A-owned backend and make the repository public. B/C deliver their own PRs; their contracts, guard SDK, report routes/migrations, reputation package, dashboard, fixtures and demo runner are untouched. This supersedes D001's planning-only scope and D003's initial private visibility. The equal human-effort estimates in PLAN.md remain planning estimates, not measured implementation time.
+
+Impact: source-running TypeScript workspace with exact Node26.7.0/pnpm11.25.0 pins, Fastify5.12.8, Zod4.6.7, better-sqlite3 13.0.3, TypeScript5.9.3, Vitest5.1.0 and ESLint10.14.0. Tested compatibility is established by install/native SQLite smoke, lint/typecheck and actual automated output. CI pins third-party actions by verified release commit SHA. No Rust dependencies are added by A.
+
+## D006 — Safe partial product composition
+
+Accepted: the standalone server is loopback, sandbox and synthetic-fixture only. Live receiver adapters can read testnet, but live permit issuance requires injected verified B policy/finality and C reputation adapters. There is no fallback empty live report state or assumed current vault policy. E2E/attack/demo entry points fail explicitly until the real B/C runners exist.
+
+Impact: A tests and HTTP smoke exercise actual API/SQLite/Ed25519 behavior, not on-chain enforcement. Rust vector equality, owner approvals, scoped key, pending-spend checks and S1–S10 remain cross-owner gates. B/C browser consumers use the pure `@counterparty-guard/shared/browser` export; Node signing never enters a browser bundle.
+
+## D007 — Evidence, retries and integration semantics
+
+Accepted: canonical bounded JSON snapshots bind retained inputs to signed authorization. Mandatory account/code facts use the same concrete block with underlying freshness. Idempotency fingerprints bind authenticated identity/request, action and environment; claims persist their nonce and enforce transactional owner/invalidation checks. Authority changes during awaits cannot knowingly release the old result. Independent activity credit in live mode comes only from C's justified optional 0..15 result; raw indexed counts earn none.
+
+Impact: fresh fetch timestamps or coverage-window/block advancement alone do not invalidate unchanged facts. Material risk/policy/code changes do; known in-flight/consumed executions cannot revalidate as reusable. Only trusted B adapters promote exact finalized operation evidence into successful history. Public golden vectors are ready for B review; no B/C owner review is fabricated.
