@@ -1,0 +1,35 @@
+name: Implementation package
+description: Track a scoped package with ownership and acceptance evidence.
+title: "[A/B/C][1-8] "
+body:
+  - type: input
+    id: owner
+    attributes:
+      label: Owner and reviewer
+      description: Identify the contributor and the affected reviewer.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Deliverable
+      description: State concrete behavior and owned paths; link PLAN.md and the package.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and interfaces
+      description: Note schema/vector/event/migration handoffs and blockers.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance and validation
+      description: Specify checks, security regressions and real evidence required for completion.
+    validations:
+      required: true
+  - type: textarea
+    id: handoff
+    attributes:
+      label: Handoff and estimate
+      description: Start with three active hours; record estimate changes and reproduction notes.
