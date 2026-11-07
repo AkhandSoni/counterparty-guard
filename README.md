@@ -1,5 +1,7 @@
 # Counterparty Guard
 
+Repository: [medhansh-19/counterparty-guard](https://github.com/medhansh-19/counterparty-guard) · Private · Default branch: `main`.
+
 Before an AI agent pays on NEAR, check the exact receiver and action. Return `allow`, `warn`, or `block` with evidence and freshness; enforce eligible actions through a restricted agent key and an independently checking vault.
 
 **Status: planning and folder setup only.** There is no working API, dashboard, SDK, contract, permit implementation, or recorded attack run yet. The workspace manifests, dependency pins, lockfiles, application commands, and CI checks will be implemented in Foundation.
