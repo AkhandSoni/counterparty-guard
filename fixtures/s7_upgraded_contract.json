@@ -1,0 +1,60 @@
+{
+  "id": "S7",
+  "name": "Upgraded Contract Receiver",
+  "description": "Contract bytecode hash upgraded since prior interaction (CODE_CHANGED); forces warning reassessment despite positive historical reputation.",
+  "security_invariant": "Bytecode replacement on a contract target invalidates prior approval history and forces human warning re-approval before executing transactions against the new code.",
+  "network": "testnet",
+  "proposed_action": {
+    "kind": "contract_call",
+    "receiver_id": "contract.testnet",
+    "method_name": "claim_reward",
+    "args_base64": "eyJpZCI6MTAxfQ==",
+    "attached_deposit_yocto": "50000000000000000000000",
+    "gas_tgas": 30
+  },
+  "expected_decision": "warn",
+  "expected_reason_codes": ["CODE_CHANGED"],
+  "expected_signed": false,
+  "expected_submitted": false,
+  "expected_balance_delta_yocto": "0",
+  "initial_state": {
+    "receiver_id": "contract.testnet",
+    "account_age_days": 160,
+    "interaction_count": 85,
+    "first_seen_timestamp": "2026-06-01T00:00:00Z",
+    "is_contract": true,
+    "previous_code_hash": "3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b",
+    "current_code_hash": "7f8e9d0c1b2a3f4e5d6c7b8a9f0e1d2c3b4a5f6e7d8c9b0a1f2e3d4c5b6a7f8e",
+    "code_hash_changed": true,
+    "is_blocked": false,
+    "reputation_risk_points": 55,
+    "raw_report_count": 0,
+    "effective_report_weight": 0.0,
+    "circular_activity_detected": false,
+    "circular_activity_score": 0,
+    "coverage": {
+      "accounts_visited": 10,
+      "edges_traversed": 16,
+      "truncated": false,
+      "window_days": 7
+    },
+    "reports": [],
+    "funding_connections": [
+      {
+        "source": "dao-deployer.testnet",
+        "target": "contract.testnet",
+        "amount_yocto": "50000000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Initial contract deployment funding"
+      }
+    ],
+    "canonical_permit": {
+      "permit_hash": "7f8e9d0c1b2a3f4e5d6c7b8a9f0e1d2c3b4a5f6e7d8c9b0a1f2e3d4c5b6a7f8e",
+      "verdict": "warn",
+      "nonce": "nonce_s7_upgraded",
+      "policy_revision": 7,
+      "blocklist_revision": 7
+    }
+  }
+}

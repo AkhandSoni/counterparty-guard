@@ -1,0 +1,105 @@
+{
+  "id": "S5",
+  "name": "Circular Activity Manipulation",
+  "description": "Manufactured circular flow within small connected 3-account group; circular volume discounted with CIRCULAR_ACTIVITY warning and risk score 65.",
+  "security_invariant": "Reciprocal wash trading in closed loops is detected and penalized; artificial transaction volume cannot manufacture legitimate reputation credit.",
+  "network": "testnet",
+  "proposed_action": {
+    "kind": "transfer_near",
+    "receiver_id": "wash-trader.testnet",
+    "amount_yocto": "50000000000000000000000"
+  },
+  "expected_decision": "warn",
+  "expected_reason_codes": ["CIRCULAR_ACTIVITY"],
+  "expected_signed": false,
+  "expected_submitted": false,
+  "expected_balance_delta_yocto": "0",
+  "initial_state": {
+    "receiver_id": "wash-trader.testnet",
+    "account_age_days": 68,
+    "interaction_count": 18,
+    "first_seen_timestamp": "2026-09-01T00:00:00Z",
+    "is_contract": false,
+    "current_code_hash": null,
+    "is_blocked": false,
+    "circular_activity_detected": true,
+    "circular_activity_score": 65,
+    "reputation_risk_points": 65,
+    "raw_report_count": 1,
+    "effective_report_weight": 1.0,
+    "ring_accounts": ["wash-trader.testnet", "ring-a.testnet", "ring-b.testnet"],
+    "cycle_path": [
+      "wash-trader.testnet",
+      "ring-a.testnet",
+      "ring-b.testnet",
+      "wash-trader.testnet"
+    ],
+    "circular_volume_percent": 85,
+    "coverage": {
+      "accounts_visited": 12,
+      "edges_traversed": 28,
+      "truncated": false,
+      "window_days": 7
+    },
+    "reports": [
+      {
+        "report_id": "00000000-0000-4000-8000-000000000051",
+        "network": "testnet",
+        "accused_account_id": "wash-trader.testnet",
+        "reporter_id": "indexer-sentinel.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "wash_trading",
+        "description": "Automated on-chain detector observed reciprocal 3-account ring transfer loop.",
+        "transaction_references": [
+          "tx_ring_step1_10near",
+          "tx_ring_step2_99near",
+          "tx_ring_step3_98near"
+        ],
+        "evidence_content_hashes": [
+          "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4"
+        ],
+        "contract_code_hash": null,
+        "status": "submitted",
+        "issued_at": 1792947600000,
+        "expires_at": 1824483600000,
+        "nonce": "nonce_rep_wash_01",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": null,
+        "created_at": 1792947600000
+      }
+    ],
+    "funding_connections": [
+      {
+        "source": "wash-trader.testnet",
+        "target": "ring-a.testnet",
+        "amount_yocto": "10000000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Cycle Hop 1: wash-trader -> ring-a"
+      },
+      {
+        "source": "ring-a.testnet",
+        "target": "ring-b.testnet",
+        "amount_yocto": "9900000000000000000000000",
+        "hop_level": 2,
+        "is_faucet": false,
+        "description": "Cycle Hop 2: ring-a -> ring-b"
+      },
+      {
+        "source": "ring-b.testnet",
+        "target": "wash-trader.testnet",
+        "amount_yocto": "9800000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Cycle Hop 3: ring-b -> wash-trader (Loop Closed)"
+      }
+    ],
+    "canonical_permit": {
+      "permit_hash": "5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f",
+      "verdict": "warn",
+      "nonce": "nonce_s5_circle8",
+      "policy_revision": 7,
+      "blocklist_revision": 7
+    }
+  }
+}

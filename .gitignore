@@ -24,3 +24,7 @@ secrets/
 artifacts/local/
 playwright-report/
 test-results/
+
+.agents/
+counterparty-guard-plan/
+dist-ts/

@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/shared" },
+    { "path": "./packages/reputation" },
+    { "path": "./apps/web" },
+    { "path": "./apps/api" },
+    { "path": "./fixtures" }
+  ]
+}

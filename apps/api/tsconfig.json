@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "./",
+    "outDir": "./dist-ts",
+    "tsBuildInfoFile": "./dist-ts/.tsbuildinfo",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "paths": {
+      "@counterparty-guard/shared": ["../../packages/shared/dist/src/index.d.ts"],
+      "@counterparty-guard/reputation": ["../../packages/reputation/dist/src/index.d.ts"]
+    }
+  },
+  "include": ["src/**/*", "tests/**/*"]
+}

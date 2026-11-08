@@ -1,0 +1,63 @@
+{
+  "id": "S1",
+  "name": "Legitimate Established Receiver",
+  "description": "Established legitimate receiver with 182-day history, clean graph traversal, independent funding lineage, producing immediate allow and finalized transfer.",
+  "security_invariant": "Autonomous AI agent execution is permitted only when counterparty exhibits established independent history with zero adversarial signals; valid execution permit issued and finalized on-chain.",
+  "network": "testnet",
+  "proposed_action": {
+    "kind": "transfer_near",
+    "receiver_id": "merchant.testnet",
+    "amount_yocto": "50000000000000000000000"
+  },
+  "expected_decision": "allow",
+  "expected_reason_codes": [],
+  "expected_signed": true,
+  "expected_submitted": true,
+  "expected_balance_delta_yocto": "50000000000000000000000",
+  "initial_state": {
+    "receiver_id": "merchant.testnet",
+    "account_age_days": 182,
+    "interaction_count": 42,
+    "first_seen_timestamp": "2026-05-10T08:00:00Z",
+    "is_contract": false,
+    "current_code_hash": null,
+    "is_blocked": false,
+    "reputation_risk_points": 5,
+    "raw_report_count": 0,
+    "effective_report_weight": 0.0,
+    "circular_activity_detected": false,
+    "circular_activity_score": 0,
+    "coverage": {
+      "accounts_visited": 18,
+      "edges_traversed": 45,
+      "truncated": false,
+      "window_days": 7
+    },
+    "reports": [],
+    "funding_connections": [
+      {
+        "source": "merchant-hq.testnet",
+        "target": "merchant.testnet",
+        "amount_yocto": "25000000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Initial seed deposit"
+      },
+      {
+        "source": "investor-dao.testnet",
+        "target": "merchant-hq.testnet",
+        "amount_yocto": "1000000000000000000000000000",
+        "hop_level": 2,
+        "is_faucet": false,
+        "description": "Ecosystem grant funding"
+      }
+    ],
+    "canonical_permit": {
+      "permit_hash": "7a8b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b",
+      "verdict": "allow",
+      "nonce": "nonce_s1_78a9c0",
+      "policy_revision": 7,
+      "blocklist_revision": 7
+    }
+  }
+}

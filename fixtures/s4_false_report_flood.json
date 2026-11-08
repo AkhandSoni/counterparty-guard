@@ -1,0 +1,636 @@
+{
+  "id": "S4",
+  "name": "False-Report Flood Attack",
+  "description": "Coordinated false-report flood attack with 20 Sybil accounts sharing common funder; Sybil discount caps aggregate weight to 1.0; no hard block triggered.",
+  "security_invariant": "Raw report volume from coordinated Sybil clusters must be discounted to the weight of a single independent source (1.0) and can NEVER manufacture hard-block authority without reviewer moderation.",
+  "network": "testnet",
+  "proposed_action": {
+    "kind": "transfer_near",
+    "receiver_id": "popular-service.testnet",
+    "amount_yocto": "50000000000000000000000"
+  },
+  "expected_decision": "allow",
+  "expected_reason_codes": ["DEPENDENT_REPORTS"],
+  "expected_signed": true,
+  "expected_submitted": true,
+  "expected_balance_delta_yocto": "50000000000000000000000",
+  "initial_state": {
+    "receiver_id": "popular-service.testnet",
+    "account_age_days": 238,
+    "interaction_count": 142,
+    "first_seen_timestamp": "2026-03-15T12:00:00Z",
+    "is_contract": true,
+    "current_code_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "is_blocked": false,
+    "raw_report_count": 20,
+    "effective_report_weight": 1,
+    "sybil_discount_applied": true,
+    "reputation_risk_points": 20,
+    "coverage": {
+      "accounts_visited": 32,
+      "edges_traversed": 84,
+      "truncated": false,
+      "window_days": 7
+    },
+    "dependence_group": {
+      "group_id": "group_funder_sybil_parent",
+      "common_funder_id": "sybil-parent.testnet",
+      "reporter_count": 20,
+      "effective_weight": 1,
+      "faucet_exempted": false,
+      "discount_factor": 0.05,
+      "discount_reason": "20 correlated allegations share common funding progenitor sybil-parent.testnet within 7-day window. Weight capped to 1.0 independent source; cannot trigger hard block."
+    },
+    "reports": [
+      {
+        "report_id": "00000000-0000-4000-8000-000000000001",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-1.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #1 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_01"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792944060000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_01",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792944060000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000002",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-2.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #2 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_02"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792944120000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_02",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792944120000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000003",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-3.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #3 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_03"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792944180000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_03",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792944180000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000004",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-4.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #4 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_04"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792944240000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_04",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792944240000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000005",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-5.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #5 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_05"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792944300000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_05",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792944300000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000006",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-6.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #6 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_06"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792944360000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_06",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792944360000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000007",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-7.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #7 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_07"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792944420000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_07",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792944420000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000008",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-8.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #8 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_08"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792944480000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_08",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792944480000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000009",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-9.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #9 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_09"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792944540000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_09",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792944540000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000010",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-10.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #10 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_10"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792944600000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_10",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792944600000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000011",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-11.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #11 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_11"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792944660000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_11",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792944660000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000012",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-12.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #12 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_12"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792944720000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_12",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792944720000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000013",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-13.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #13 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_13"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792944780000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_13",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792944780000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000014",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-14.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #14 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_14"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792944840000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_14",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792944840000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000015",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-15.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #15 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_15"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792944900000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_15",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792944900000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000016",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-16.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #16 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_16"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792944960000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_16",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792944960000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000017",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-17.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #17 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_17"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792945020000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_17",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792945020000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000018",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-18.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #18 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_18"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792945080000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_18",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792945080000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000019",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-19.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #19 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_19"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792945140000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_19",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792945140000
+      },
+      {
+        "report_id": "00000000-0000-4000-8000-000000000020",
+        "network": "testnet",
+        "accused_account_id": "popular-service.testnet",
+        "reporter_id": "sybil-20.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "phishing",
+        "description": "Coordinated duplicate report #20 alleging phishing signature requests.",
+        "transaction_references": ["tx_sybil_claim_20"],
+        "evidence_content_hashes": [
+          "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
+        ],
+        "contract_code_hash": null,
+        "status": "corroborated",
+        "issued_at": 1792945200000,
+        "expires_at": 1793034000000,
+        "nonce": "nonce_rep_sybil_20",
+        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "dependence_group_id": "group_funder_sybil_parent",
+        "created_at": 1792945200000
+      }
+    ],
+    "funding_connections": [
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-1.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #1"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-2.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #2"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-3.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #3"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-4.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #4"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-5.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #5"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-6.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #6"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-7.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #7"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-8.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #8"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-9.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #9"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-10.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #10"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-11.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #11"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-12.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #12"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-13.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #13"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-14.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #14"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-15.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #15"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-16.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #16"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-17.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #17"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-18.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #18"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-19.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #19"
+      },
+      {
+        "source": "sybil-parent.testnet",
+        "target": "sybil-20.testnet",
+        "amount_yocto": "500000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Sybil cluster funding branch #20"
+      }
+    ],
+    "canonical_permit": {
+      "permit_hash": "3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d",
+      "verdict": "allow",
+      "nonce": "nonce_s4_99x87z",
+      "policy_revision": 7,
+      "blocklist_revision": 7
+    }
+  }
+}

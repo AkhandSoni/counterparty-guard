@@ -1,0 +1,33 @@
+{
+  "name": "counterparty-guard-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "tsc --build --noEmit",
+    "build": "pnpm -r --filter=!./contracts/** run build",
+    "demo": "tsx scripts/demo/run-attack.ts",
+    "demo:attack": "tsx scripts/demo/run-attack.ts",
+    "demo:all": "tsx scripts/demo/run-all.ts"
+  },
+  "dependencies": {
+    "@counterparty-guard/fixtures": "workspace:*",
+    "@counterparty-guard/reputation": "workspace:*",
+    "@counterparty-guard/shared": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@types/node": "^22.8.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}

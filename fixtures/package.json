@@ -1,0 +1,32 @@
+{
+  "name": "@counterparty-guard/fixtures",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "import": "./index.ts",
+      "default": "./index.ts"
+    },
+    "./*": {
+      "types": "./*.json",
+      "default": "./*.json"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@counterparty-guard/shared": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.8.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}
