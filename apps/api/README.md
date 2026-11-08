@@ -1,7 +1,7 @@
-# apps/api
+# Check API
 
-Owner: **A; C owns src/routes/reports.ts**.
+Owner: **A; C owns `src/routes/reports.ts`**.
 
-Fastify API, authenticated checks, evidence storage and reconciliation.
+Implemented injectable Fastify service, authenticated check/evidence/receiver/execution/revalidation routes, bounded inputs, SQLite persistence and trusted B/C integration seams. The standalone process is loopback sandbox-fixture only.
 
-Status: planning marker only; no implementation or passing tests are implied. See [the implementation plan](../../docs/person-a-plan.md) and the root ownership rules before adding code.
+Run the [root setup](../../README.md) and read [the API contract](../../docs/api.md), [integration contract](../../docs/integration-contracts.md), and [security limits](../../docs/security.md).

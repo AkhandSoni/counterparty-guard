@@ -1,0 +1,63 @@
+Person A validation — actual command output
+2026-11-08T04:51:14.384810+05:30
+Scope: A backend only. Fixtures are not chain execution.
+
+$ pnpm install --frozen-lockfile
+Scope: all 5 workspace projects
+Already up to date
+Done in 155ms using pnpm v11.25.0
+Exit status: 0
+
+$ pnpm lint
+$ eslint .
+Exit status: 0
+
+$ pnpm typecheck
+$ tsc --noEmit
+Exit status: 0
+
+$ pnpm test
+$ vitest run --config vitest.config.ts
+
+ RUN  v5.1.0 /Users/medhanshadhlakha/Downloads/counterparty-guard-plan
+
+
+ Test Files  3 passed (3)
+      Tests  64 passed (64)
+   Start at  04:51:16
+   Duration  157ms (import 39%, tests 31%, transform 28%, worker 2%)
+Exit status: 0
+
+$ pnpm test:integration
+$ vitest run --config vitest.integration.config.ts
+
+ RUN  v5.1.0 /Users/medhanshadhlakha/Downloads/counterparty-guard-plan
+
+
+ Test Files  1 passed (1)
+      Tests  28 passed (28)
+   Start at  04:51:16
+   Duration  283ms (tests 73%, import 22%, transform 5%, worker 1%)
+Exit status: 0
+
+$ pnpm verify:interfaces
+$ tsx scripts/person-a/verify-interfaces.ts
+Verified 4 committed TypeScript golden vectors (bytes, hashes and Ed25519 signatures). Rust equivalence awaits Person B’s PR.
+Exit status: 0
+
+$ pnpm setup:local
+$ tsx scripts/person-a/setup-local.ts
+Local setup already exists; credentials and database were preserved.
+Start: GUARD_CONFIG_FILE=artifacts/local/config.json pnpm dev:api
+Exit status: 0
+
+$ pnpm smoke:api
+$ tsx scripts/person-a/smoke.ts
+merchant.testnet: allow; real service signature verified; durable retry matched; revalidation valid; no chain signature/submission.
+new-receiver.testnet: warn; real service signature verified; durable retry matched; revalidation valid; no chain signature/submission.
+Person A HTTP smoke passed. All data is synthetic fixture data; B/C enforcement and demo are not exercised.
+Exit status: 0
+
+$ pnpm audit --prod
+No known vulnerabilities found
+Exit status: 0

@@ -1,0 +1,44 @@
+Person A PR #1 review fixes — 9 November 2026
+Local fixture/API checks only; no chain transaction signed or submitted.
+
+$ pnpm lint
+$ eslint .
+exit 0
+
+$ pnpm typecheck
+$ tsc --noEmit
+exit 0
+
+$ pnpm test
+$ vitest run --config vitest.config.ts
+Test Files  3 passed (3)
+     Tests  69 passed (69)
+exit 0
+
+$ pnpm test:integration
+$ vitest run --config vitest.integration.config.ts
+Test Files  1 passed (1)
+     Tests  37 passed (37)
+exit 0
+
+$ pnpm verify:interfaces
+$ tsx scripts/person-a/verify-interfaces.ts
+Verified 4 committed TypeScript golden vectors (bytes, hashes and Ed25519 signatures). Rust equivalence awaits Person B’s PR.
+exit 0
+
+$ pnpm smoke:api
+$ tsx scripts/person-a/smoke.ts
+merchant.testnet: allow; real service signature verified; durable retry matched; revalidation valid; no chain signature/submission.
+new-receiver.testnet: warn; real service signature verified; durable retry matched; revalidation valid; no chain signature/submission.
+Person A HTTP smoke passed. All data is synthetic fixture data; B/C enforcement and demo are not exercised.
+exit 0
+
+Review regression scope: first deployment after a code-free success; code removal;
+unchanged code-free receivers; out-of-order contract receipts; height 9/10/11,
+JavaScript safe-integer boundary and u64 maximum; repeated final receipt;
+same-block conflicts and unchanged-code controls; missing chronology fails closed;
+legacy-schema backfill and restart preserve immutable evidence; finalized history
+changes during signing stop issuance, then a same-ID/same-nonce retry warns.
+
+Dependency pins and permit bytes did not change. E2E/attack/demo remain unavailable
+until B/C integrations land; no passing chain/demo evidence is claimed.

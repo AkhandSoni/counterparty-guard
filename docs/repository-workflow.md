@@ -4,14 +4,14 @@
 
 - Name: `counterparty-guard`.
 - Initial owner: authenticated account `medhansh-19` unless changed by the user.
-- Initial visibility: private; no license grant is assumed.
+- Visibility: public, explicitly requested during Person A implementation; no license grant is assumed.
 - Default branch: `main`.
 - Initial content: plans, ownership markers, ignore rules and contribution templates. No working runtime or contracts yet.
 - Commit identity: Medhansh's configured Git identity. Use plain project commit messages without generated attribution trailers.
 
 Repository creation and push status must be verified directly on GitHub; these intended settings alone do not establish completion.
 
-Verified 8 November 2026: [the private repository](https://github.com/medhansh-19/counterparty-guard) exists, the planning/folder setup is pushed, and `main` is the only remote branch and the default. Commit identity uses the contributor's configured name/email. Collaborator invitations, protections, CI and application implementation remain future work.
+Initial setup on 8 November 2026: [the repository](https://github.com/medhansh-19/counterparty-guard) exists, the planning/folder setup is pushed, and `main` is the only remote branch and the default. Commit identity uses the contributor's configured name/email. The user subsequently requested public visibility and Person A implementation. Public visibility is verified; A CI and backend are delivered on `feat/a-core`. B/C collaborator identities, owner reviews and remaining product integrations are separate work.
 
 ## Branches and reviews
 
