@@ -96,6 +96,11 @@ export class GuardStore {
       const row = this.database.prepare('SELECT * FROM checks WHERE id=?').get(claim.id) as CheckRow;
       if (row.state !== 'claimed' || row.lease_owner !== claim.owner) throw new ApiError('ISSUANCE_IN_PROGRESS', 'Assessment ownership changed; retry this request ID', 409);
       if (row.invalidated_reason) throw new ApiError('CHECK_INVALIDATED', 'Assessment was invalidated during issuance; use an explicit new request', 409);
+      // Signing/authority awaits can overlap receipt reconciliation. Compare under
+      // the same transaction that persists the result; never release a stale baseline.
+      if (result.permit && digest(this.history(agent, request.action.receiver_id, result.source_mode)) !== digest(snapshot.history)) {
+        throw new ApiError('SOURCE_UNAVAILABLE', 'Finalized history changed during issuance; retry the same request ID', 503);
+      }
       const snapshotId = randomUUID();
       this.database.prepare('INSERT INTO evidence_snapshots VALUES (?,?,?,?,?,?,?)').run(snapshotId, request.network, result.source_mode, request.action.receiver_id, digest(snapshot), canonical(snapshot), result.evaluated_at);
       this.database.prepare('INSERT INTO receiver_observations VALUES (?,?,?,?,?,?,?,?)').run(randomUUID(), agent.agent_id, request.network, result.source_mode, request.action.receiver_id, snapshot.evidence.code_identity, snapshotId, snapshot.evidence.observed_at);

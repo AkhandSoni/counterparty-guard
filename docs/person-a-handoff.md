@@ -19,7 +19,7 @@ The HTTP smoke actually starts the standalone API, verifies service signatures, 
 
 ## Validation evidence
 
-**Current local result: 105 tests passed** (69 shared/provider/scoring unit regressions and 36 API/storage integration regressions). Lint, strict typecheck, four golden vectors and HTTP smoke passed after the 9 November PR review fixes. The original delivery also passed frozen-lock installation and a point-in-time production dependency audit; dependency pins are unchanged.
+**Current local result: 106 tests passed** (69 shared/provider/scoring unit regressions and 37 API/storage integration regressions). Lint, strict typecheck, four golden vectors and HTTP smoke passed after the 9 November PR review fixes. The original delivery also passed frozen-lock installation and a point-in-time production dependency audit; dependency pins are unchanged.
 
 Actual review-fix command output is archived in [the current validation transcript](validation/person-a-review-fixes.txt); [the initial delivery transcript](validation/person-a.txt) retains the earlier install/audit results. They include command exit statuses and exact test totals. They establish A's API/SQLite/cryptographic behavior, not on-chain key enforcement or demo success. GitHub CI runs the same implemented A gates on Linux; PR/run status must be verified separately before claiming that run passed.
 
@@ -37,7 +37,7 @@ All contributors must then run S1–S10, recovery/allowance and fresh-checkout g
 
 ## Material decisions and limits
 
-- Review fixes preserve a known code-free baseline and order approved code by finalized execution height, including u64 boundaries and conservative same-block conflicts. `core-002` backfills retained receipts without changing existing signed snapshots. See D008 and the runbook for migration and B/C interface impact.
+- Review fixes preserve a known code-free baseline and order approved code by finalized execution height, including u64 boundaries and conservative same-block conflicts. Completion rejects history changes during signing inside its persistence transaction. `core-002` backfills retained receipts without changing existing signed snapshots. See D008 and the runbook for migration and B/C interface impact.
 - No live authority fallback: standalone runtime is loopback sandbox fixtures; use injected trusted adapters for live composition.
 - Exact permit bytes/signing domains and new `independent_activity_credit`/execution/revalidation contracts are documented for B/C review. No frozen reviewed Rust compatibility is implied.
 - One ordered migration manifest; append C migrations without editing/reordering applied core SQL.

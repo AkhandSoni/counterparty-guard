@@ -445,6 +445,28 @@ describe('finalized code identity history', () => {
     expect(deployed.reason_codes).toContain('CODE_CHANGED');
     expect(deployed.permit?.payload.verdict).toBe('warn');
   });
+  it('refuses stale allow issuance when a newer code baseline finalizes during signing', async () => {
+    const f = fixture();
+    const first = checkResponseSchema.parse((await f.post()).json());
+    finalize(f, first, '10', initialNow + 1);
+    f.setEvidence({ code_identity: 'code-v2' });
+    const upgraded = checkResponseSchema.parse((await f.post({ ...f.request, request_id: 'awaiting-v2-finality' })).json());
+    expect(upgraded.decision).toBe('warn');
+    f.setEvidence({ code_identity: 'code-v1' });
+    f.setSignHook(async () => { finalize(f, upgraded, '20', initialNow + 2); });
+    const request = { ...f.request, request_id: 'history-changes-while-signing' };
+    const stale = await f.post(request);
+    expect(stale.statusCode).toBe(503);
+    expect(stale.json().permit).toBeNull();
+    expect(f.store.database.prepare('SELECT COUNT(*) AS n FROM permit_records').get()).toEqual({ n: 2 });
+    const claim = f.store.database.prepare('SELECT nonce FROM checks WHERE request_id=?').get(request.request_id) as { nonce: string };
+    f.setSignHook(async () => {});
+    const retried = checkResponseSchema.parse((await f.post(request)).json());
+    expect(retried.decision).toBe('warn');
+    expect(retried.reason_codes).toContain('CODE_CHANGED');
+    expect(retried.permit?.payload.verdict).toBe('warn');
+    expect(retried.permit?.payload.nonce).toBe(claim.nonce);
+  });
   it.each([
     ['9', '10', '11'],
     ['9007199254740991', '9007199254740992', '9007199254740993'],

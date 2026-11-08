@@ -24,6 +24,8 @@ Observations distinguish attempted, signed, submitted, pending, uncertain, succe
 
 The finalized observation's existing `block_height` must identify the verified operation result's execution block, not the current polling head. A persists it as `finalized_block_height` and orders the latest successful code baseline by exact u64 height. `finalized_at` remains the first finalized observation time for audit only. No event or permit byte fields change. The shared `FinalizedAgentHistory` type adds optional `code_identity_ambiguous`; conflicting code identities in the latest execution block require a warning because no within-block order is supplied. A successful code-free interaction establishes a real `null` baseline, distinguished from absent history by `finalized_successes>0`.
 
+Issuance compares the retained history with current finalized history inside the completion transaction, after all source/signing awaits. Reconciliation that changes history during issuance yields `SOURCE_UNAVAILABLE` with no returned permit; retrying the same request ID preserves its nonce and reassesses the current baseline. Existing signed snapshots are never rewritten.
+
 B's SDK must stop on block/errors; warn waits for real owner approval. Revalidate before normal signing, inspect execution state, preserve request IDs on retries, and never automatically mint a new request/permit after uncertain submission. B independently checks network/deployment/vault, direct caller/key, signature, full action, revisions/time/nonce, approval, target/args/gas/deposit, budgets/liquidity/storage, then consumes nonce and reserves before dispatch. A's implementation cannot substitute for these checks.
 
 ## C: reputation, reports and UI

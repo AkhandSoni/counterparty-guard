@@ -18,7 +18,7 @@ exit 0
 $ pnpm test:integration
 $ vitest run --config vitest.integration.config.ts
 Test Files  1 passed (1)
-     Tests  36 passed (36)
+     Tests  37 passed (37)
 exit 0
 
 $ pnpm verify:interfaces
@@ -37,7 +37,8 @@ Review regression scope: first deployment after a code-free success; code remova
 unchanged code-free receivers; out-of-order contract receipts; height 9/10/11,
 JavaScript safe-integer boundary and u64 maximum; repeated final receipt;
 same-block conflicts and unchanged-code controls; missing chronology fails closed;
-legacy-schema backfill and restart preserve immutable evidence.
+legacy-schema backfill and restart preserve immutable evidence; finalized history
+changes during signing stop issuance, then a same-ID/same-nonce retry warns.
 
 Dependency pins and permit bytes did not change. E2E/attack/demo remain unavailable
 until B/C integrations land; no passing chain/demo evidence is claimed.
