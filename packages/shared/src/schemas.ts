@@ -69,4 +69,10 @@ export interface ExecutionProvider { getExecution(network: Network, vaultId: str
 
 export type ReputationResult = ReputationSnapshot;
 export type ScoringResult = ScoreResult;
-export interface ScoringInput { action: Action; evidence: ReceiverEvidence; reputation: ReputationSnapshot; policy: PolicySnapshot; now: number; history: { finalized_successes: number; approved_code_identity: string | null }; }
+export interface FinalizedAgentHistory {
+  finalized_successes: number;
+  approved_code_identity: string | null;
+  /** Conflicting identities in the latest finalized block have no verified within-block order. */
+  code_identity_ambiguous?: boolean;
+}
+export interface ScoringInput { action: Action; evidence: ReceiverEvidence; reputation: ReputationSnapshot; policy: PolicySnapshot; now: number; history: FinalizedAgentHistory; }

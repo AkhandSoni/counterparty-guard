@@ -23,6 +23,8 @@ SQLite uses WAL, foreign keys, a bounded busy timeout and synchronous short tran
 
 `db/migrations.json` orders both core and future report migrations. Every applied migration records its ID, position and checksum. Append new migrations; do not reorder or rewrite applied SQL. A mismatched manifest fails startup rather than silently using another schema. C appends its report migration entries during integration.
 
+`core-002` adds `executions.finalized_block_height` and backfills it from the retained receipt that established each finalized outcome. Existing signed responses and evidence snapshots remain unchanged. Apply it through normal `GuardStore` startup after backing up the database. If a legacy success has no matching retained receipt, history is unavailable and new authorizations fail closed; restore/verify the missing evidence rather than inventing a height. Polling timestamps are retained for audit and never used to infer execution order.
+
 Retries use the same authenticated `request_id` and identical action/network/vault. Concurrent in-progress assessment returns409 and can be retried with that same ID. An interrupted claim can be reclaimed after its lease with the same nonce; it does not authorize an uncertain payment retry. Completed checks survive restart. Expired/invalidated IDs require explicit new assessment; never automatically create a new request after submitted/uncertain chain execution.
 
 For `SOURCE_UNAVAILABLE`, `SOURCE_STALE`, malformed authority data or DB failure, stop authorization. Do not replace a provider response with a clean fixture. Revalidate before normal SDK signing; a source failure means unavailable, never valid. Pending/uncertain executions remain conservatively counted in B's vault until proven nonexecution.

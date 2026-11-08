@@ -2,7 +2,7 @@ import {
   actionSchema, policySnapshotSchema, receiverEvidenceSchema, reputationSnapshotSchema,
   memoArgumentsSchema, scoreResultSchema, GuardError,
   type Action, type ReceiverEvidence, type ReputationSnapshot, type PolicySnapshot,
-  type ScoreResult, type ReasonCode,
+  type ScoreResult, type ReasonCode, type FinalizedAgentHistory,
 } from '@counterparty-guard/shared';
 
 export interface ScoringInput {
@@ -10,7 +10,7 @@ export interface ScoringInput {
   evidence: ReceiverEvidence;
   reputation: ReputationSnapshot;
   policy: PolicySnapshot;
-  history: { finalized_successes: number; approved_code_identity: string | null };
+  history: FinalizedAgentHistory;
   now: number;
 }
 
@@ -112,8 +112,12 @@ export function scoreAssessment(input: ScoringInput): ScoreResult {
   if (!evidence.coverage.complete || evidence.coverage.truncated || !reputation.coverage.complete || reputation.coverage.truncated) {
     add('INCOMPLETE_HISTORY', 0, 'Bounded or incomplete historical coverage is shown explicitly and supplies no fabricated history.');
   }
-  const codeChanged = history.approved_code_identity !== null && history.approved_code_identity !== evidence.code_identity;
-  if (codeChanged) add('CODE_CHANGED', 0, 'Current code differs from the agent’s previously approved code; reassessment and an owner warning are required.');
+  const hasApprovedIdentity = history.finalized_successes > 0 || history.approved_code_identity !== null;
+  const codeChanged = history.code_identity_ambiguous === true
+    || (hasApprovedIdentity && history.approved_code_identity !== evidence.code_identity);
+  if (codeChanged) add('CODE_CHANGED', 0, history.code_identity_ambiguous
+    ? 'Latest finalized successes have conflicting code identities without a verified within-block order; an owner warning is required.'
+    : 'Current code differs from the agent’s previously approved code; reassessment and an owner warning are required.');
   const risk = Math.max(0, Math.min(100, contributions.reduce((total, item) => total + item.points, 0)));
   return scoreResultSchema.parse({decision: codeChanged || risk >= 30 ? 'warn' : 'allow', risk_indicator: risk,
     reason_codes: contributions.map(item => item.code), reasons: contributions.map(item => item.explanation), contributions});

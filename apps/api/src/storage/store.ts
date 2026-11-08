@@ -5,7 +5,7 @@ import { dirname } from 'node:path';
 import {
   agentRegistrationSchema, checkResponseSchema, executionObservationSchema, canonicalJson, decodePublicKey,
   type AgentRegistration, type CheckRequest, type CheckResponse, type ExecutionObservation,
-  type Network, type PolicySnapshot, type ReceiverEvidence, type ReputationSnapshot, type SourceMode,
+  type Network, type PolicySnapshot, type ReceiverEvidence, type ReputationSnapshot, type SourceMode, type FinalizedAgentHistory,
 } from '@counterparty-guard/shared';
 import { ApiError } from '../errors.js';
 import { migrate } from './migrate.js';
@@ -18,7 +18,7 @@ export interface EvidenceSnapshot {
   evidence: ReceiverEvidence;
   reputation: ReputationSnapshot;
   policy: PolicySnapshot;
-  history: { finalized_successes: number; approved_code_identity: string | null };
+  history: FinalizedAgentHistory;
 }
 interface CheckRow {
   id: string; agent_id: string; request_id: string; network: Network; vault_id: string; source_mode: SourceMode;
@@ -34,7 +34,7 @@ export interface ExecutionRecord {
   id: string; check_id: string; agent_id: string; network: Network; vault_id: string; permit_hash: string;
   receiver_id: string; action_json: string; code_identity: string | null; stage: string; signed: number;
   submitted: number; finalized: number; nonexecution_proven: number; transaction_id: string | null;
-  approval_reference: string | null; finalized_at: number | null; updated_at: number;
+  approval_reference: string | null; finalized_at: number | null; finalized_block_height: string | null; updated_at: number;
 }
 
 /** SQLite persistence. Methods performing writes use short synchronous transactions only. */
@@ -120,11 +120,24 @@ export class GuardStore {
   invalidateReceiver(network: Network, accountId: string, reason: string): number {
     return this.database.prepare('UPDATE checks SET invalidated_reason=COALESCE(invalidated_reason,?) WHERE network=? AND json_extract(action_json,\'$.receiver_id\')=?').run(reason, network, accountId).changes;
   }
-  history(agent: AgentRegistration, receiverId: string, sourceMode: SourceMode): { finalized_successes: number; approved_code_identity: string | null } {
-    const rows = this.database.prepare(`SELECT e.code_identity FROM executions e JOIN checks c ON c.id=e.check_id
+  history(agent: AgentRegistration, receiverId: string, sourceMode: SourceMode): FinalizedAgentHistory {
+    const scope = `FROM executions e JOIN checks c ON c.id=e.check_id
       WHERE e.agent_id=? AND e.network=? AND e.vault_id=? AND c.source_mode=? AND e.receiver_id=? AND e.stage='succeeded' AND e.finalized=1
-      ORDER BY e.finalized_at DESC LIMIT 100`).all(agent.agent_id, agent.network, agent.vault_id, sourceMode, receiverId) as { code_identity: string | null }[];
-    return { finalized_successes: rows.length, approved_code_identity: rows[0]?.code_identity ?? null };
+    `;
+    const params = [agent.agent_id, agent.network, agent.vault_id, sourceMode, receiverId];
+    return this.database.transaction(() => {
+      const counts = this.database.prepare(`SELECT COUNT(*) AS successes, COUNT(e.finalized_block_height) AS anchored ${scope}`).get(...params) as { successes: number; anchored: number };
+      if (counts.successes !== counts.anchored) throw new ApiError('EVIDENCE_UNAVAILABLE', 'Finalized history lacks execution chronology', 503);
+      // Heights are canonical u64 text: length then lexical order preserves every integer bit.
+      // Group before limiting so arbitrarily many same-code receipts cannot hide a conflicting tie.
+      const latest = this.database.prepare(`SELECT e.code_identity, e.finalized_block_height ${scope}
+        GROUP BY e.finalized_block_height, e.code_identity
+        ORDER BY length(e.finalized_block_height) DESC, e.finalized_block_height DESC, e.code_identity
+        LIMIT 2`).all(...params) as { code_identity: string | null; finalized_block_height: string }[];
+      const ambiguous = latest.length === 2 && latest[0]!.finalized_block_height === latest[1]!.finalized_block_height;
+      return { finalized_successes: Math.min(100, counts.successes), approved_code_identity: latest[0]?.code_identity ?? null,
+        ...(ambiguous ? { code_identity_ambiguous: true } : {}) };
+    })();
   }
   receiver(agent: AgentRegistration, accountId: string, sourceMode: SourceMode): { evidence: ReceiverEvidence; history: ReturnType<GuardStore['history']> } | null {
     const row = this.database.prepare(`SELECT s.snapshot_json FROM receiver_observations o JOIN evidence_snapshots s ON s.id=o.snapshot_id
@@ -169,9 +182,9 @@ export class GuardStore {
       const submitted = ['submitted', 'pending', 'uncertain', 'succeeded', 'failed'].includes(observation.state);
       const signed = observation.state !== 'attempted';
       this.database.prepare(`UPDATE executions SET stage=?,signed=MAX(signed,?),submitted=MAX(submitted,?),finalized=?,nonexecution_proven=?,
-        transaction_id=COALESCE(?,transaction_id),approval_reference=COALESCE(?,approval_reference),finalized_at=?,updated_at=? WHERE id=?`).run(
+        transaction_id=COALESCE(?,transaction_id),approval_reference=COALESCE(?,approval_reference),finalized_at=?,finalized_block_height=?,updated_at=? WHERE id=?`).run(
         observation.state, Number(signed), Number(submitted), Number(observation.finalized), Number(observation.nonexecution_proven), observation.transaction_id,
-        observation.owner_approval_ref, isFinal ? observation.observed_at : null, Math.max(row.updated_at, observation.observed_at), row.id,
+        observation.owner_approval_ref, isFinal ? observation.observed_at : null, isFinal ? observation.block_height : null, Math.max(row.updated_at, observation.observed_at), row.id,
       );
     })();
   }

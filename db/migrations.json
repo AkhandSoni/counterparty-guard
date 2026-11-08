@@ -1,6 +1,7 @@
 {
   "version": 1,
   "migrations": [
-    { "id": "core-001", "path": "core/001_initial.sql" }
+    { "id": "core-001", "path": "core/001_initial.sql" },
+    { "id": "core-002", "path": "core/002_execution_chronology.sql" }
   ]
 }

@@ -4,8 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
-  publicKeyFromKeyObject, signPermit, verifySignedPermit,
-  type AgentRegistration, type CheckRequest, type ExecutionObservation,
+  publicKeyFromKeyObject, signPermit, verifySignedPermit, checkResponseSchema,
+  type AgentRegistration, type CheckRequest, type CheckResponse, type ExecutionObservation,
   type PolicySnapshot, type ReceiverEvidence, type ReputationSnapshot,
 } from '@counterparty-guard/shared';
 import { createApp } from '../../apps/api/src/app.js';
@@ -70,6 +70,19 @@ async function allow(f: ReturnType<typeof fixture>) {
   const body = response.json();
   expect(body.decision).toBe('allow');
   return body;
+}
+
+function finalize(f: ReturnType<typeof fixture>, check: CheckResponse, blockHeight: string, observedAt: number, receiptId = check.check_id) {
+  if (!check.permit) throw new Error('Expected an issued permit');
+  const observation: ExecutionObservation = {
+    execution_id: check.check_id, check_id: check.check_id, network: 'sandbox', vault_id: 'vault.testnet',
+    permit_hash: check.permit.permit_hash, state: 'succeeded', transaction_id: `fixture-tx-${receiptId}`,
+    receipt_id: `fixture-receipt-${receiptId}`, block_height: blockHeight, block_hash: `fixture-block-${blockHeight}`,
+    observed_at: observedAt, finalized: true, nonexecution_proven: false,
+    owner_approval_ref: check.decision === 'warn' ? `fixture-owner-${check.permit.permit_hash}` : null,
+  };
+  f.store.reconcile(observation);
+  return observation;
 }
 
 describe('authenticated assessment and durable issuance', () => {
@@ -416,6 +429,106 @@ describe('revalidation and trusted finalized history', () => {
     f.store.reconcile({ ...observation, state: 'succeeded', owner_approval_ref: 'fixture-owner-approval' });
     expect(f.store.history(registrations[0]!, 'receiver.testnet', 'fixture').finalized_successes).toBe(1);
     expect((await f.app.inject({ method: 'POST', url: `/v1/executions/${first.check_id}`, headers: { authorization: `Bearer ${token}` }, payload: { succeeded: true } })).statusCode).toBe(404);
+  });
+});
+
+describe('finalized code identity history', () => {
+  it('issues a warning for first deployment after a finalized code-free payment', async () => {
+    const f = fixture();
+    f.setEvidence({ code_identity: null });
+    const first = checkResponseSchema.parse((await f.post()).json());
+    expect(first.decision).toBe('allow');
+    finalize(f, first, '10', initialNow + 1);
+    f.setEvidence({ code_identity: 'code-v1', recent_deployment: false });
+    const deployed = checkResponseSchema.parse((await f.post({ ...f.request, request_id: 'first-deployment' })).json());
+    expect(deployed.decision).toBe('warn');
+    expect(deployed.reason_codes).toContain('CODE_CHANGED');
+    expect(deployed.permit?.payload.verdict).toBe('warn');
+  });
+  it.each([
+    ['9', '10', '11'],
+    ['9007199254740991', '9007199254740992', '9007199254740993'],
+    ['18446744073709551613', '18446744073709551614', '18446744073709551615'],
+  ])('keeps the latest approved code after delayed older receipts at %s / %s / %s', async (firstHeight, delayedHeight, latestHeight) => {
+    const f = fixture();
+    const request = { ...f.request, action: { kind: 'contract_call', receiver_id: 'receiver.testnet', method_name: 'accept_memo', args_base64: Buffer.from('{"memo":"history regression"}').toString('base64'), attached_deposit_yocto: '0', gas_tgas: 30 } };
+    const account = (await f.dependencies.receiverProvider.assess({})).observations[0]!;
+    f.setEvidence({ observations: [account, { ...account, id: 'fixture:code', kind: 'contract_code' }] });
+    const first = checkResponseSchema.parse((await f.post(request)).json());
+    const delayed = checkResponseSchema.parse((await f.post({ ...request, request_id: 'delayed-v1' })).json());
+    finalize(f, first, firstHeight, initialNow + 1);
+    f.setEvidence({ code_identity: 'code-v2' });
+    const upgraded = checkResponseSchema.parse((await f.post({ ...request, request_id: 'upgrade-v2' })).json());
+    expect(upgraded.decision).toBe('warn');
+    finalize(f, upgraded, latestHeight, initialNow + 2);
+    const olderReceipt = finalize(f, delayed, delayedHeight, initialNow + 3);
+    f.store.reconcile({ ...olderReceipt, observed_at: initialNow + 4 });
+    expect(f.store.history(registrations[0]!, 'receiver.testnet', 'fixture')).toEqual({ finalized_successes: 3, approved_code_identity: 'code-v2' });
+    expect(f.store.execution(delayed.check_id, registrations[0]!.agent_id)?.finalized_block_height).toBe(delayedHeight);
+    f.setEvidence({ code_identity: 'code-v1' });
+    const rollback = checkResponseSchema.parse((await f.post({ ...request, request_id: 'rollback-v1' })).json());
+    expect(rollback.decision).toBe('warn');
+    expect(rollback.reason_codes).toContain('CODE_CHANGED');
+    expect(rollback.permit?.payload.verdict).toBe('warn');
+  });
+  it('requires a warning for conflicting code identities finalized in the same block', async () => {
+    const f = fixture();
+    f.setEvidence({ code_identity: null });
+    const first = checkResponseSchema.parse((await f.post()).json());
+    finalize(f, first, '10', initialNow + 1);
+    f.setEvidence({ code_identity: 'code-v2' });
+    const second = checkResponseSchema.parse((await f.post({ ...f.request, request_id: 'same-block-v2' })).json());
+    finalize(f, second, '10', initialNow + 2);
+    expect(f.store.history(registrations[0]!, 'receiver.testnet', 'fixture').code_identity_ambiguous).toBe(true);
+    for (const identity of [null, 'code-v2']) {
+      f.setEvidence({ code_identity: identity });
+      const next = checkResponseSchema.parse((await f.post({ ...f.request, request_id: `ambiguous-${identity}` })).json());
+      expect(next.decision).toBe('warn');
+      expect(next.reason_codes).toContain('CODE_CHANGED');
+    }
+    const third = checkResponseSchema.parse((await f.post({ ...f.request, request_id: 'later-block-v2' })).json());
+    finalize(f, third, '11', initialNow + 3);
+    expect(f.store.history(registrations[0]!, 'receiver.testnet', 'fixture')).toEqual({ finalized_successes: 3, approved_code_identity: 'code-v2' });
+  });
+  it('allows unchanged code when multiple successes share one finalized block', async () => {
+    const f = fixture();
+    const first = checkResponseSchema.parse((await f.post()).json());
+    const second = checkResponseSchema.parse((await f.post({ ...f.request, request_id: 'same-code' })).json());
+    finalize(f, first, '10', initialNow + 2);
+    finalize(f, second, '10', initialNow + 1);
+    expect(f.store.history(registrations[0]!, 'receiver.testnet', 'fixture')).toEqual({ finalized_successes: 2, approved_code_identity: 'code-v1' });
+    expect(checkResponseSchema.parse((await f.post({ ...f.request, request_id: 'unchanged-code' })).json()).decision).toBe('allow');
+  });
+  it('issues no permit when a legacy finalized success has no retained execution height', async () => {
+    const f = fixture();
+    const first = checkResponseSchema.parse((await f.post()).json());
+    finalize(f, first, '10', initialNow + 1);
+    f.store.database.prepare('UPDATE executions SET finalized_block_height=NULL WHERE id=?').run(first.check_id);
+    const response = await f.post({ ...f.request, request_id: 'missing-chronology' });
+    expect(response.statusCode).toBe(503);
+    expect(response.json().permit).toBeNull();
+    expect(f.signCount).toBe(1);
+  });
+  it('backfills existing finalized receipts and preserves chronology after restart', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'guard-history-upgrade-'));
+    cleanups.push(() => rmSync(directory, { recursive: true, force: true }));
+    const path = join(directory, 'guard.sqlite');
+    const f = fixture({ path });
+    const first = checkResponseSchema.parse((await f.post()).json());
+    const delayed = checkResponseSchema.parse((await f.post({ ...f.request, request_id: 'legacy-delayed' })).json());
+    finalize(f, first, '10', initialNow + 1);
+    f.setEvidence({ code_identity: 'code-v2' });
+    const second = checkResponseSchema.parse((await f.post({ ...f.request, request_id: 'legacy-v2' })).json());
+    finalize(f, second, '20', initialNow + 2);
+    finalize(f, delayed, '11', initialNow + 3);
+    const originalSnapshot = f.store.check(first.check_id, registrations[0]!.agent_id)?.snapshot;
+    // Reconstruct the previous schema while retaining actual issued checks/receipts.
+    f.store.database.exec("DROP INDEX executions_history_height; ALTER TABLE executions DROP COLUMN finalized_block_height; DELETE FROM schema_migrations WHERE id='core-002'");
+    const upgraded = new GuardStore(path);
+    cleanups.push(() => upgraded.close());
+    expect(upgraded.history(registrations[0]!, 'receiver.testnet', 'fixture')).toEqual({ finalized_successes: 3, approved_code_identity: 'code-v2' });
+    expect(upgraded.check(first.check_id, registrations[0]!.agent_id)?.snapshot).toEqual(originalSnapshot);
+    expect(upgraded.execution(delayed.check_id, registrations[0]!.agent_id)?.finalized_block_height).toBe('11');
   });
 });
 
