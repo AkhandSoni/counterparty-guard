@@ -11,8 +11,8 @@ $ tsc --noEmit
 exit 0
 
 $ pnpm test
- Test Files  43 passed (43)
-      Tests  764 passed (764)
+ Test Files  44 passed (44)
+      Tests  767 passed (767)
    Start at  12:42:01
    Duration  2.97s (tests 79%, import 17%, transform 3%, worker 1%)
 exit 0
@@ -24,7 +24,7 @@ $ vitest run --config vitest.integration.config.ts
 
 
  Test Files  2 passed (2)
-      Tests  45 passed (45)
+      Tests  46 passed (46)
    Start at  12:42:05
    Duration  447ms (tests 74%, import 19%, transform 6%, worker 1%)
 
@@ -63,3 +63,10 @@ pnpm demo:all: exit 1; nine fixture assessments pass, S8 vault/replay unavailabl
 Sandbox and testnet demo adapters: exit 1; every scenario explicitly execution_unavailable,
 no deterministic fallback relabelled as chain execution. These are unavailable gates, not failures
 of a deployed system or successful on-chain security checks.
+
+Final review remediation: parallel receipts previously expanded combinatorially in cycle DFS.
+The fixed 500-receipt/four-account ring visits four directed relationships and retains
+all actual receipt volume; dense graphs stop at 20,000 search steps. A truncated
+analysis produces HTTP503 and no permit. Three focused cycle-budget tests and one
+API no-permit regression passed; the final totals above include them. The complete
+lint/typecheck/test/integration/build/HTTP smoke sequence was rerun after this fix.

@@ -13,7 +13,7 @@ afterEach(async () => { for (const close of cleanups.splice(0).reverse()) await 
 const now = 1800000000000;
 const agentToken = 'fixture-agent-private-credential';
 const reviewerToken = 'fixture-independent-reviewer-credential';
-function fixture() {
+function fixture(graphEdges?: unknown[]) {
   const store = new GuardStore(); cleanups.push(() => store.close());
   const repository = new ReportRepository(store.database, () => now);
   const scorer = generateKeyPairSync('ed25519');
@@ -25,7 +25,8 @@ function fixture() {
     receiverProvider: { sourceMode: 'fixture', async assess(input) {
       const value = { fixture: true };
       const evidence: ReceiverEvidence = { network: input.network, source_mode: 'fixture', account_id: input.account_id, exists: true, code_identity: 'code-v1', account_age_days: 100, recent_deployment: false, independent_successful_counterparties: 15, transfer_count: 10, activity_manipulation_score: 0, coverage, observed_at: now,
-        observations: [{ id: 'fixture-account', kind: 'account_state', network: input.network, source_mode: 'fixture', source: 'fixture', fetched_at: now, source_timestamp: now, block_height: '1', block_hash: 'fixture-block', coverage, raw_hash: digest(value), value }] };
+        observations: [{ id: 'fixture-account', kind: 'account_state', network: input.network, source_mode: 'fixture', source: 'fixture', fetched_at: now, source_timestamp: now, block_height: '1', block_hash: 'fixture-block', coverage, raw_hash: digest(value), value },
+          ...(graphEdges ? [{ id: 'fixture-graph', kind: 'transfer_graph', network: input.network, source_mode: 'fixture' as const, source: 'fixture', fetched_at: now, source_timestamp: now, block_height: '1', block_hash: 'fixture-block', coverage, raw_hash: digest({edges:graphEdges}), value: {edges:graphEdges} }] : [])] };
       return evidence;
     } },
     policyProvider: { async getPolicy() { return { network: 'sandbox', vault_id: 'vault.testnet', deployment_instance_id: '11'.repeat(32), revision: '1', observed_at: now, paused: false, max_action_yocto: '100000000000000000000000', permit_ttl_ms: 120000, max_source_age_ms: 60000, supported_call: null }; } },
@@ -99,6 +100,15 @@ describe('A+C shared authorization and review boundaries', () => {
     expect(clusterDependenceGroups({ network: 'sandbox', reports: [a,duplicated], lineages }).totalEffectiveWeight).toBe(1);
     lineages.get(a.reporter_id)!.transferPeers = [b.reporter_id];
     expect(clusterDependenceGroups({ network: 'sandbox', reports: [a,b], lineages }).totalEffectiveWeight).toBe(1);
+  });
+  it('fails closed without a permit when bounded cycle search is incomplete', async () => {
+    const accounts = ['receiver.testnet', ...Array.from({length:21}, (_,index)=>`account-${index}.testnet`)];
+    const edges: unknown[] = [];
+    for (const predecessor_id of accounts) for (const receiver_id of accounts) if (predecessor_id !== receiver_id) edges.push({ receipt_id:`${predecessor_id}:${receiver_id}`, predecessor_id, receiver_id, amount_yocto:'1', timestamp_ms: now-1 });
+    const f = fixture(edges);
+    const response = await f.check('cycle-budget-exhausted');
+    expect(response.statusCode, response.body).toBe(503); expect(response.json().permit).toBeNull();
+    expect(f.store.database.prepare('SELECT COUNT(*) AS count FROM permit_records').get()).toEqual({count:0});
   });
   it('a faucet exemption cannot erase an independent code-change condition', async () => {
     const f = fixture(); const allegation = report('alice.testnet', 'fixture:event:one');

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { accountIdSchema, amountSchema, timestampSchema, type ReputationProvider } from '@counterparty-guard/shared';
+import { accountIdSchema, amountSchema, timestampSchema, GuardError, type ReputationProvider } from '@counterparty-guard/shared';
 import { clusterDependenceGroups } from './graph/clustering.js';
 import { detectCircularFlow } from './graph/circular.js';
 import { InMemoryGraphProvider, traverseBoundedGraph, type GraphEdge } from './graph/traversal.js';
@@ -19,6 +19,7 @@ export function createReputationProvider(repository: ReportRepository, clock: ()
       const reports = repository.getReportsByAccused(network, accountId).filter(report => report.expires_at > now && ['submitted', 'references_verified', 'corroborated'].includes(report.status) && (report.transaction_references.length > 0 || report.evidence_content_hashes.length > 0));
       const clustering = clusterDependenceGroups({ network, reports, graph, now });
       const circular = detectCircularFlow({ graph, targetAccountId: accountId, nowMs: now, windowDays: 7 });
+      if (circular.truncated) throw new GuardError('SOURCE_UNAVAILABLE', 'Cycle analysis exceeded its bounded search budget; no authorization issued', 503);
       const blocks = repository.getActiveBlocks(network, accountId, now);
       return {
         network, account_id: accountId, blocklist_revision: String(repository.getLatestBlocklistRevision()), observed_at: now, available: true,

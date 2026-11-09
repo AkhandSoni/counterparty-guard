@@ -13,6 +13,8 @@ export interface DirectedCycle {
 }
 
 export interface CircularFlowResult {
+  truncated: boolean;
+  searchSteps: number;
   circularActivityDetected: boolean;
   circularActivityScore: number; // 0 to 100 integer/float strictly satisfying ReceiverReputationSchema
   circularVolumeRatio: number; // 0.0 to 1.0
@@ -55,28 +57,33 @@ function canonicalRotate<T>(arr: T[], keyFn: (item: T) => string): T[] {
 export function detectCircularFlow(options: CircularFlowDetectorOptions): CircularFlowResult {
   const { graph } = options;
   const targetAccountId = options.targetAccountId.trim().toLowerCase();
-  const maxCycleLength = options.maxCycleLength ?? 4;
+  const maxCycleLength = Math.min(4, Math.max(2, options.maxCycleLength ?? 4));
   const windowDays = options.windowDays ?? 7;
   const nowMs = options.nowMs ?? Date.now();
   const cutoffTimestamp = nowMs - windowDays * 24 * 60 * 60 * 1000;
 
   // 1. Build directed adjacency list from in-window transfer edges
-  const adj = new Map<string, Array<{ to: string; edge: GraphEdge }>>();
+  const adj = new Map<string, Map<string, GraphEdge>>();
+  const pairVolumes = new Map<string, bigint>();
+  const seenReceipts = new Set<string>();
+  const eligibleEdges: GraphEdge[] = [];
 
   for (const edge of graph.edges) {
-    if (edge.timestamp < cutoffTimestamp || edge.timestamp > nowMs) {
-      continue;
-    }
+    if (edge.type !== 'transfer' || edge.timestamp < cutoffTimestamp || edge.timestamp > nowMs || seenReceipts.has(edge.id)) continue;
+    seenReceipts.add(edge.id);
     const source = edge.source.trim().toLowerCase();
     const target = edge.target.trim().toLowerCase();
-    if (source === target) continue; // ignore self-loops
-
-    let list = adj.get(source);
-    if (!list) {
-      list = [];
-      adj.set(source, list);
+    if (source === target) continue;
+    eligibleEdges.push(edge);
+    const key = JSON.stringify([source, target]);
+    if (edge.amountYocto && /^(0|[1-9][0-9]{0,38})$/.test(edge.amountYocto)) {
+      pairVolumes.set(key, (pairVolumes.get(key) ?? 0n) + BigInt(edge.amountYocto));
     }
-    list.push({ to: target, edge });
+    let neighbors = adj.get(source);
+    if (!neighbors) { neighbors = new Map(); adj.set(source, neighbors); }
+    // Search one account relationship once, while retaining actual receipt values
+    // separately. A representative edge remains an original receipt, not a fake aggregate.
+    if (!neighbors.has(target)) neighbors.set(target, edge);
   }
 
   // 2. Search for directed cycles of lengths 2, 3, 4
@@ -84,7 +91,12 @@ export function detectCircularFlow(options: CircularFlowDetectorOptions): Circul
   const seenCanonicalCycles = new Set<string>();
 
   // Explore candidate cycle start nodes from graph nodes
-  const candidateStartNodes = Array.from(graph.nodes.keys());
+  // Only cycles incident to this receiver contribute to its assessment. Searching
+  // from the receiver discovers all such cycles without exploring unrelated roots.
+  const candidateStartNodes = [targetAccountId];
+  const maxSearchSteps = 20_000;
+  let searchSteps = 0;
+  let truncated = false;
 
   for (const startNode of candidateStartNodes) {
     const dfs = (
@@ -93,9 +105,11 @@ export function detectCircularFlow(options: CircularFlowDetectorOptions): Circul
       pathEdges: GraphEdge[],
       depth: number,
     ) => {
-      const neighbors = adj.get(currentNode) ?? [];
-
-      for (const { to, edge } of neighbors) {
+      const neighbors = adj.get(currentNode) ?? new Map<string, GraphEdge>();
+      for (const [to, edge] of neighbors) {
+        if (truncated) return;
+        if (searchSteps >= maxSearchSteps) { truncated = true; return; }
+        searchSteps++;
         if (to === startNode && depth >= 2 && depth <= maxCycleLength) {
           // Cycle closed!
           // Canonicalize cycle to deduplicate cyclic rotations
@@ -113,17 +127,8 @@ export function detectCircularFlow(options: CircularFlowDetectorOptions): Circul
             let minVolume = 0n;
             let hasVolume = false;
             for (const e of rotatedEdges) {
-              if (e.amountYocto) {
-                try {
-                  const amt = BigInt(e.amountYocto);
-                  if (!hasVolume || amt < minVolume) {
-                    minVolume = amt;
-                    hasVolume = true;
-                  }
-                } catch {
-                  // Ignore parse error on malformed string
-                }
-              }
+              const amount = pairVolumes.get(JSON.stringify([e.source.trim().toLowerCase(), e.target.trim().toLowerCase()])) ?? 0n;
+              if (!hasVolume || amount < minVolume) { minVolume = amount; hasVolume = true; }
             }
 
             detectedCycles.push({
@@ -149,7 +154,7 @@ export function detectCircularFlow(options: CircularFlowDetectorOptions): Circul
 
   // Calculate total volume incident to targetAccountId
   let totalIncidentVolumeBigInt = 0n;
-  for (const edge of graph.edges) {
+  for (const edge of eligibleEdges) {
     const s = edge.source.trim().toLowerCase();
     const t = edge.target.trim().toLowerCase();
     if (s === targetAccountId || t === targetAccountId) {
@@ -165,6 +170,7 @@ export function detectCircularFlow(options: CircularFlowDetectorOptions): Circul
 
   if (relevantCycles.length === 0) {
     return {
+      truncated, searchSteps,
       circularActivityDetected: false,
       circularActivityScore: 0,
       circularVolumeRatio: 0.0,
@@ -207,6 +213,7 @@ export function detectCircularFlow(options: CircularFlowDetectorOptions): Circul
   }
 
   return {
+    truncated, searchSteps,
     circularActivityDetected,
     circularActivityScore,
     circularVolumeRatio,

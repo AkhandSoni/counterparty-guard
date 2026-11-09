@@ -3,7 +3,7 @@
  * @description Receiver reputation scoring pipeline (Interface Contract 1).
  */
 
-import { type ReceiverReputation, ReceiverReputationSchema } from '@counterparty-guard/shared';
+import { type ReceiverReputation, ReceiverReputationSchema, GuardError } from '@counterparty-guard/shared';
 import { detectCircularFlow } from './graph/circular.js';
 import { clusterDependenceGroups } from './graph/clustering.js';
 import { FaucetRegistry } from './graph/faucet.js';
@@ -127,6 +127,8 @@ export async function getReceiverReputation(
     windowDays: 7,
     nowMs: now,
   });
+
+  if (circularFlow.truncated) throw new GuardError('SOURCE_UNAVAILABLE', 'Cycle analysis exceeded its bounded search budget', 503);
 
   // 6. Stage 6: Risk Points & Reason Codes Synthesis
   const reasonCodes: string[] = [];
