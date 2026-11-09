@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import {
   InMemoryGraphProvider,
   ReportRepository,
@@ -11,7 +12,7 @@ import {
 } from '@counterparty-guard/shared';
 import type { FastifyInstance } from 'fastify';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { buildServer } from '../src/server.js';
+import { buildServer } from '../test-support/report-server.js';
 
 describe('Adversarial Challenge: Fastify Reports API Service (apps/api/tests/challenger-reports-api.test.ts)', () => {
   let server: FastifyInstance;
@@ -29,8 +30,8 @@ describe('Adversarial Challenge: Fastify Reports API Service (apps/api/tests/cha
       reporter_public_key: keyPair.publicKey,
       category: 'drainer',
       description: 'Suspicious drain of deposit vault with unverified credentials.',
-      transaction_references: ['3xH8bV91kLmNoPqRsTuVwXyZ1234567890abcdef'],
-      evidence_content_hashes: ['e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'],
+      transaction_references: [`fixture:${randomUUID()}`],
+      evidence_content_hashes: [],
       contract_code_hash: null,
       issued_at: now - 30_000,
       expires_at: now + 300_000,
@@ -49,7 +50,7 @@ describe('Adversarial Challenge: Fastify Reports API Service (apps/api/tests/cha
   beforeEach(async () => {
     const db = createDatabase({ path: ':memory:' });
     runMigrations(db);
-    repository = new ReportRepository(db);
+    repository = new ReportRepository(db, () => now);
 
     server = await buildServer({
       repository,
@@ -934,6 +935,7 @@ describe('Adversarial Challenge: Fastify Reports API Service (apps/api/tests/cha
         const { signedPayload } = createSignedPayload(generateKeyPair(), {
           accused_account_id: target,
           reporter_id: reporterId,
+          transaction_references: ['fixture:duplicated-swarm-event'],
         });
 
         await server.inject({
@@ -1211,7 +1213,7 @@ describe('Adversarial Challenge: Fastify Reports API Service (apps/api/tests/cha
         },
       });
       expect(res1.statusCode).toBe(200);
-      const rev1 = JSON.parse(res1.body).blocklist_revision;
+      const _rev1 = JSON.parse(res1.body).blocklist_revision;
 
       // Second review on already reviewed report
       const res2 = await server.inject({

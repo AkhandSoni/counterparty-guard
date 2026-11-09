@@ -1,13 +1,1 @@
-{
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "composite": true,
-    "rootDir": "./",
-    "outDir": "./dist",
-    "tsBuildInfoFile": "./dist/.tsbuildinfo",
-    "paths": {
-      "@counterparty-guard/shared": ["../../packages/shared/dist/src/index.d.ts"]
-    }
-  },
-  "include": ["src/**/*", "tests/**/*"]
-}
+{"extends":"../../tsconfig.json","compilerOptions":{"composite":false,"noEmit":true},"include":["src/**/*.ts","tests/**/*.ts"]}

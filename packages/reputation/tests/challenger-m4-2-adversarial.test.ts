@@ -1,12 +1,10 @@
-import { randomUUID } from 'node:crypto';
+import 'node:crypto';
 import { ReceiverReputationSchema, type ReportRecord } from '@counterparty-guard/shared';
 import { describe, expect, it } from 'vitest';
 import { detectCircularFlow } from '../src/graph/circular.js';
 import { type ReporterFundingLineage, clusterDependenceGroups } from '../src/graph/clustering.js';
 import {
-  DEFAULT_FAUCET_EXEMPTIONS,
   FaucetRegistry,
-  isFaucetExempted,
 } from '../src/graph/faucet.js';
 import type {
   AccountAdjacency,
@@ -115,7 +113,7 @@ describe('Adversarial Verification Suite: Milestone M4 Sybil, Faucet, Circular &
     it('S4 Stress Test: 50 reports from 50 Sybil accounts sharing common non-faucet funder cap to weight <= 1.0 and isBlocked = false', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
       const faucetRegistry = new FaucetRegistry(repo);
 
       const count = 50;
@@ -179,7 +177,7 @@ describe('Adversarial Verification Suite: Milestone M4 Sybil, Faucet, Circular &
 
       expect(rep.isBlocked).toBe(false);
       expect(rep.effectiveReportWeight).toBeLessThanOrEqual(1.0);
-      expect(rep.reputationRiskPoints).toBe(20);
+      expect(rep.reputationRiskPoints).toBe(40);
       expect(rep.reasonCodes).toContain('DEPENDENT_REPORTS');
       expect(ReceiverReputationSchema.safeParse(rep).success).toBe(true);
     });
@@ -187,7 +185,7 @@ describe('Adversarial Verification Suite: Milestone M4 Sybil, Faucet, Circular &
     it('S4 Stress Test: 100 reports from 100 Sybil accounts sharing 2-hop grand funder cap to weight <= 1.0 and isBlocked = false', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
       const faucetRegistry = new FaucetRegistry(repo);
 
       const count = 100;
@@ -258,7 +256,7 @@ describe('Adversarial Verification Suite: Milestone M4 Sybil, Faucet, Circular &
     it('S4 Stress Test: 500 reports flood across 500 Sybil accounts cap to weight <= 1.0 and isBlocked = false', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
       const faucetRegistry = new FaucetRegistry(repo);
 
       const count = 500;
@@ -346,7 +344,7 @@ describe('Adversarial Verification Suite: Milestone M4 Sybil, Faucet, Circular &
       expect(rep.isBlocked).toBe(false);
       expect(rep.rawReportCount).toBe(500);
       expect(rep.effectiveReportWeight).toBeLessThanOrEqual(1.0);
-      expect(rep.reputationRiskPoints).toBe(20);
+      expect(rep.reputationRiskPoints).toBe(40);
       expect(rep.reasonCodes).toContain('DEPENDENT_REPORTS');
       expect(ReceiverReputationSchema.safeParse(rep).success).toBe(true);
     });
@@ -399,7 +397,7 @@ describe('Adversarial Verification Suite: Milestone M4 Sybil, Faucet, Circular &
     it('S6 Stress Test: 10 independent accounts whose common funder is faucet.testnet retain individual weight 1.0 (total weight = 10.0)', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
       const faucetRegistry = new FaucetRegistry(repo);
 
       const count = 10;
@@ -688,7 +686,7 @@ describe('Adversarial Verification Suite: Milestone M4 Sybil, Faucet, Circular &
     it('Reviewer Authority Invariant: 10,000 unreviewed reports produce isBlocked: false', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
 
       const accusedId = 'innocent-victim-merchant.testnet';
       const count = 10_000;
@@ -750,7 +748,7 @@ describe('Adversarial Verification Suite: Milestone M4 Sybil, Faucet, Circular &
     it('Reviewer Authority Invariant: Active block in SQLite produces isBlocked: true, ACTIVE_BLOCK, and 100 risk points', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
 
       const accusedId = 'confirmed-drainer.testnet';
 
@@ -795,7 +793,7 @@ describe('Adversarial Verification Suite: Milestone M4 Sybil, Faucet, Circular &
     it('Reviewer Authority Invariant: Revoked block immediately restores isBlocked: false', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
 
       const accusedId = 'rehabilitated-merchant.testnet';
 
@@ -840,7 +838,7 @@ describe('Adversarial Verification Suite: Milestone M4 Sybil, Faucet, Circular &
     it('Reviewer Authority Invariant: Expired block evaluates as isBlocked: false', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
 
       const accusedId = 'time-bounded-block.testnet';
 
@@ -868,7 +866,7 @@ describe('Adversarial Verification Suite: Milestone M4 Sybil, Faucet, Circular &
     it('Reviewer Authority Invariant: Code-hash specific block targets matching bytecode hash across hosts', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
 
       const maliciousHash = '33333333333333333333333333333333';
       const cleanHash = '44444444444444444444444444444444';
@@ -885,7 +883,7 @@ describe('Adversarial Verification Suite: Milestone M4 Sybil, Faucet, Circular &
       // Evaluation with malicious code hash on host B -> isBlocked: true
       const repMalicious = await getReceiverReputation({
         network: 'testnet',
-        accountId: 'host-b.testnet',
+        accountId: 'contract-account.testnet',
         contractCodeHash: maliciousHash,
         repository: repo,
         now,

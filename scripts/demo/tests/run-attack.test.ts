@@ -6,13 +6,11 @@
 import fs from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { DemoExecutionLogSchema } from '@counterparty-guard/shared';
+import { DemoExecutionLogSchema } from '@counterparty-guard/shared/demo';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   CounterpartyBlockedError,
-  WarningApprovalRequiredError,
   createDeterministicGuardDatabase,
-  evaluateGuard,
   guardedAgentExecute,
 } from '../harness/guard.js';
 import { AuditLogRecordSchema, JsonlLogger, hashPrompt } from '../harness/logger.js';
@@ -57,7 +55,7 @@ describe('Prompt-Injection Attack Runner & JSONL Logger', () => {
       expect(record.receiver_balance_delta).toBe('0');
       expect(record.decision).toBe('block');
       expect(record.permit_hash).toBeNull();
-      expect(record.reason_codes).toContain('ACTIVE_BLOCK');
+      expect(record.reason_codes).toContain('REVIEWED_BLOCKLIST_MATCH');
     });
 
     it('in-process guard halts execution and throws CounterpartyBlockedError before signing', async () => {
@@ -78,7 +76,7 @@ describe('Prompt-Injection Attack Runner & JSONL Logger', () => {
         expect(err).toBeInstanceOf(CounterpartyBlockedError);
         const blockedErr = err as CounterpartyBlockedError;
         expect(blockedErr.receiverId).toBe('known-drainer.testnet');
-        expect(blockedErr.reasonCodes).toContain('ACTIVE_BLOCK');
+        expect(blockedErr.reasonCodes).toContain('REVIEWED_BLOCKLIST_MATCH');
         expect(blockedErr.riskIndicator).toBe(100);
       }
     });
@@ -237,7 +235,7 @@ describe('Prompt-Injection Attack Runner & JSONL Logger', () => {
       };
 
       await expect(guardedAgentExecute(extremeAction, repository, 'testnet')).rejects.toThrow(
-        CounterpartyBlockedError,
+        /configured value limit/,
       );
     });
   });
@@ -256,9 +254,9 @@ describe('Prompt-Injection Attack Runner & JSONL Logger', () => {
 
       expect(result.intercepted).toBe(false);
       expect(result.record.decision).toBe('allow');
-      expect(result.record.signed).toBe(true);
-      expect(result.record.submitted).toBe(true);
-      expect(result.record.finalized_outcome).toBe('executed_success');
+      expect(result.record.signed).toBe(false);
+      expect(result.record.submitted).toBe(false);
+      expect(result.record.finalized_outcome).toBe('fixture_assessment_only');
       expect(result.record.permit_hash).not.toBeNull();
     });
 

@@ -231,8 +231,8 @@ describe('SQLite Database & Migrations (db.test.ts)', () => {
 
     // Code hash lookup matches
     const blockByCode = repo.getActiveBlock('testnet', 'other_account.testnet', 'abc123codehash');
-    expect(blockByCode).not.toBeNull();
-    expect(blockByCode?.entry_id).toBe(blockRes.entry_id);
+    expect(blockByCode).toBeNull();
+    expect(blockByCode?.entry_id).toBeUndefined();
 
     // Log human review
     repo.insertReview({
@@ -325,8 +325,8 @@ describe('SQLite Database & Migrations (db.test.ts)', () => {
       'other-account.testnet',
       'bad_hash_123',
     );
-    expect(blockMatchByHash).not.toBeNull();
-    expect(blockMatchByHash?.contract_code_hash).toBe('bad_hash_123');
+    expect(blockMatchByHash).toBeNull();
+    expect(blockMatchByHash?.contract_code_hash).toBeUndefined();
 
     // 2. Block with scope 'account'
     repo.createActiveBlock({

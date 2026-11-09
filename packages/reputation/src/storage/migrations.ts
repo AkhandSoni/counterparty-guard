@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { DatabaseSync } from 'node:sqlite';
+import type { DatabaseSync } from './db.js';
 
 export const EMBEDDED_MIGRATIONS: Array<{ name: string; sql: string }> = [
   {

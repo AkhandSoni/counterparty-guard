@@ -3,7 +3,7 @@ import {
   FaucetRegistry,
   type GraphDataProvider,
   ReportLifecycleEngine,
-  type ReportRepository,
+  ReportRepository,
   type ReporterFundingLineage,
   clusterDependenceGroups,
   getHttpStatusForIntakeErrorCode,
@@ -21,13 +21,17 @@ import {
   type SubmitReportResponse,
   SubmitReportResponseSchema,
 } from '@counterparty-guard/shared';
-import type { FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
+import { z } from 'zod';
+import type { ReportPluginContext } from '../app.js';
 import { type ReviewerAuthConfig, extractReviewerContext } from '../auth/reviewer-auth.js';
 
 export interface ReportsRouteOptions {
   repository: ReportRepository;
   now?: () => number;
   reviewerAuth?: ReviewerAuthConfig;
+  authenticateReviewer?: (request: FastifyRequest) => { reviewer_id: string };
+  invalidateReceiver?: ReportPluginContext['invalidateReceiver'];
   graphDataProvider?: GraphDataProvider;
   lineages?:
     | Map<string, ReporterFundingLineage>
@@ -118,7 +122,9 @@ export const reportsRoutes: FastifyPluginAsync<ReportsRouteOptions> = async (fas
   // 3. POST /v1/reports/:id/review - Review transition requiring reviewer auth
   fastify.post<{ Params: { id: string } }>('/v1/reports/:id/review', async (request, reply) => {
     const { id } = request.params;
-    const reviewerContext = extractReviewerContext(request, options.reviewerAuth);
+    const reviewerContext = options.authenticateReviewer
+      ? { ...options.authenticateReviewer(request), role: 'reviewer' as const, authenticated: true }
+      : extractReviewerContext(request, options.reviewerAuth);
 
     if (!reviewerContext.authenticated) {
       return reply.status(403).send({
@@ -150,6 +156,8 @@ export const reportsRoutes: FastifyPluginAsync<ReportsRouteOptions> = async (fas
     try {
       const reviewResult = await lifecycleEngine.review(id, parseResult.data, reviewerContext, now);
 
+      options.invalidateReceiver?.(existingReport.network as 'sandbox' | 'testnet', existingReport.accused_account_id, 'Report review changed authorization state');
+
       const response: ReviewReportResponse = {
         review_id: reviewResult.review.review_id,
         status: reviewResult.newStatus,
@@ -174,6 +182,23 @@ export const reportsRoutes: FastifyPluginAsync<ReportsRouteOptions> = async (fas
       }
       throw err;
     }
+  });
+
+  // Revocation remains possible even when the originating report has expired or
+  // become terminal. It uses the same independent reviewer and audit boundary.
+  fastify.post<{ Params: { id: string } }>('/v1/blocklist/:id/revoke', async (request, reply) => {
+    const reviewer = options.authenticateReviewer
+      ? { ...options.authenticateReviewer(request), role: 'reviewer' as const, authenticated: true }
+      : extractReviewerContext(request, options.reviewerAuth);
+    if (!reviewer.authenticated) return reply.status(403).send({ error: 'FORBIDDEN', message: 'Configured reviewer authority is required' });
+    const parsed = z.strictObject({ reason: z.string().trim().min(5).max(1000) }).safeParse(request.body);
+    if (!parsed.success) return reply.status(400).send({ error: 'INVALID_SCHEMA', message: 'A bounded audit reason is required' });
+    const entry = repository.getBlockById(request.params.id);
+    if (!entry) return reply.status(404).send({ error: 'NOT_FOUND', message: 'Block entry was not found' });
+    if (!entry.is_active) return reply.status(409).send({ error: 'ALREADY_REVOKED', message: 'Block entry is already inactive' });
+    const result = await lifecycleEngine.revokeBlock(entry.entry_id, parsed.data.reason, reviewer, { now: getNow() });
+    options.invalidateReceiver?.(entry.network as 'sandbox' | 'testnet', entry.accused_account_id, 'Reviewed block revocation changed authorization state');
+    return { entry_id: entry.entry_id, blocklist_revision: result.revision, status: 'revoked' };
   });
 
   // 4. GET /v1/receivers/:network/:account/reports - Query receiver reports with discounted weights
@@ -226,7 +251,7 @@ export const reportsRoutes: FastifyPluginAsync<ReportsRouteOptions> = async (fas
       // Compute Sybil clustering and discounted weights
       const clusteringResult = clusterDependenceGroups({
         network: network as 'testnet' | 'mainnet' | 'sandbox',
-        reports: validReports,
+        reports: validReports.filter(report => ['submitted', 'references_verified', 'corroborated'].includes(report.status)),
         repository,
         faucetRegistry,
         graph,
@@ -240,7 +265,7 @@ export const reportsRoutes: FastifyPluginAsync<ReportsRouteOptions> = async (fas
         category: r.category,
         status: r.status,
         issued_at: r.issued_at,
-        effective_weight: clusteringResult.reportWeightMap.get(r.report_id) ?? 1.0,
+        effective_weight: clusteringResult.reportWeightMap.get(r.report_id) ?? 0,
         dependence_group_id:
           clusteringResult.reporterGroupMap.get(r.reporter_id) ?? r.dependence_group_id ?? null,
       }));
@@ -258,3 +283,12 @@ export const reportsRoutes: FastifyPluginAsync<ReportsRouteOptions> = async (fas
     },
   );
 };
+
+/** Mount report routes in A's service using its database, auth and invalidation boundaries. */
+export function createReportsPlugin(options: { now?: () => number; graphDataProvider?: GraphDataProvider } = {}) {
+  return async (app: Parameters<FastifyPluginAsync>[0], context: ReportPluginContext): Promise<void> => {
+    await app.register(reportsRoutes, { repository: new ReportRepository(context.store.database), now: options.now,
+      authenticateReviewer: context.authenticateReviewer, invalidateReceiver: context.invalidateReceiver,
+      graphDataProvider: options.graphDataProvider });
+  };
+}

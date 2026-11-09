@@ -11,13 +11,13 @@ export const Footer: React.FC = () => {
             blocklist activation.
           </p>
           <div className="flex items-center gap-4 text-slate-400">
-            <span>Milestone 1 Shell</span>
+            <span>A+C API and reputation</span>
             <span>•</span>
             <span>NEAR Hackathon Showcase</span>
           </div>
         </div>
         <p className="text-[11px] text-slate-400">
-          Counterparty Guard Agent C Deliverables: signed intake, Sybil graph analysis, faucet
+          Counterparty Guard reputation and explanation tools: signed intake, Sybil graph analysis, faucet
           exemptions, and owner warning approval guidance.
         </p>
       </div>

@@ -13,7 +13,8 @@
 import assert from 'node:assert';
 import { randomUUID } from 'node:crypto';
 import { parseArgs } from 'node:util';
-import type { Action, ScenarioId } from '@counterparty-guard/shared';
+import type { Action } from '@counterparty-guard/shared';
+import type { ScenarioId } from '@counterparty-guard/shared/demo';
 import {
   CounterpartyBlockedError,
   WarningApprovalRequiredError,
@@ -117,7 +118,7 @@ export function parseCliArgs(argv: string[] = process.argv.slice(2)): Required<R
       'log-file': {
         type: 'string',
         short: 'l',
-        default: 'docs/demo-logs/attack-demo.jsonl',
+        default: 'artifacts/demo/attack-demo.jsonl',
       },
     },
     allowPositionals: true,
@@ -145,7 +146,7 @@ export async function runAttack(options: RunAttackOptions = {}): Promise<RunAtta
   const scenarioId = (options.scenario || 'S3').toUpperCase() as ScenarioId;
   const mode = options.mode || 'deterministic';
   const verbose = options.verbose ?? false;
-  const logFile = options.logFile ?? 'docs/demo-logs/attack-demo.jsonl';
+  const logFile = options.logFile ?? 'artifacts/demo/attack-demo.jsonl';
 
   const logger = new JsonlLogger({
     logFilePath: logFile,
@@ -168,8 +169,10 @@ export async function runAttack(options: RunAttackOptions = {}): Promise<RunAtta
     console.log('------------------------------------------------------------');
   }
 
+  if (mode !== 'deterministic') throw new Error('Chain execution unavailable until B vault/SDK integration; use deterministic fixtures');
+
   // 1. Load untrusted prompt payload
-  const scenarioConfig = PROMPTS[scenarioId] ?? PROMPTS.S3;
+  const scenarioConfig = (PROMPTS[scenarioId] ?? PROMPTS.S3)!;
   const untrustedPrompt = scenarioConfig.prompt;
   const promptHash = hashPrompt(untrustedPrompt);
 
@@ -197,7 +200,7 @@ export async function runAttack(options: RunAttackOptions = {}): Promise<RunAtta
   });
 
   // 3. Initialize Guard Environment
-  const { repository } = createDeterministicGuardDatabase();
+  const { db, repository } = createDeterministicGuardDatabase();
 
   // Execution states to be verified
   let signed = false;
@@ -300,6 +303,8 @@ export async function runAttack(options: RunAttackOptions = {}): Promise<RunAtta
 
   // 6. Assemble Audit Log Record strictly conforming to Interface Contract 3
   const auditRecord: AuditLogRecord = {
+    source_mode: 'fixture',
+    execution_environment: 'not-executed',
     run_id: runId,
     timestamp,
     scenario_id: scenarioId,
@@ -324,6 +329,7 @@ export async function runAttack(options: RunAttackOptions = {}): Promise<RunAtta
   // 7. Write to structured JSONL logger
   logger.writeRecord(auditRecord);
 
+  db.close();
   return {
     record: auditRecord,
     intercepted,

@@ -1,33 +1,43 @@
 {
-  "name": "counterparty-guard-monorepo",
+  "name": "counterparty-guard",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.25.0",
-  "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
-    "format": "biome format --write .",
-    "typecheck": "tsc --build --noEmit",
-    "build": "pnpm -r --filter=!./contracts/** run build",
-    "demo": "tsx scripts/demo/run-attack.ts",
-    "demo:attack": "tsx scripts/demo/run-attack.ts",
-    "demo:all": "tsx scripts/demo/run-all.ts"
+  "engines": {
+    "node": "^24.22.1 || ^26.7.0",
+    "pnpm": "11.25.0"
   },
-  "dependencies": {
-    "@counterparty-guard/fixtures": "workspace:*",
-    "@counterparty-guard/reputation": "workspace:*",
-    "@counterparty-guard/shared": "workspace:*",
-    "zod": "^3.23.8"
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.c-tests.json && pnpm --filter web typecheck",
+    "test": "vitest run --config vitest.config.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:e2e": "tsx scripts/person-a/unavailable.ts e2e",
+    "demo:attack": "tsx scripts/demo/run-attack.ts",
+    "demo:all": "tsx scripts/demo/run-all.ts",
+    "dev:api": "tsx apps/api/src/server.ts",
+    "setup:local": "tsx scripts/person-a/setup-local.ts",
+    "smoke:api": "tsx scripts/person-a/smoke.ts",
+    "verify:interfaces": "tsx scripts/person-a/verify-interfaces.ts",
+    "dev:web": "pnpm --filter web dev",
+    "build": "pnpm --filter web build"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4",
-    "@types/node": "^22.8.0",
-    "tsx": "^4.19.2",
-    "typescript": "^5.6.3",
-    "vitest": "^2.1.4"
+    "@types/better-sqlite3": "9.6.0",
+    "@types/node": "26.6.6",
+    "eslint": "10.14.0",
+    "typescript-eslint": "8.72.1",
+    "typescript": "5.9.3",
+    "vitest": "5.1.0",
+    "tsx": "4.23.15"
+  },
+  "dependencies": {
+    "fastify": "5.12.8",
+    "zod": "4.6.7",
+    "better-sqlite3": "13.0.3",
+    "@counterparty-guard/reputation": "workspace:*",
+    "@counterparty-guard/fixtures": "workspace:*",
+    "@counterparty-guard/shared": "workspace:*"
   }
 }

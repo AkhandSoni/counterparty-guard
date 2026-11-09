@@ -3,14 +3,10 @@
  * @description Deterministic scenario datasets and evidence provider for Receiver Evidence Timeline & Graph UI.
  */
 
-import type { ScenarioId } from '@counterparty-guard/shared';
+import type { ScenarioId } from '@counterparty-guard/shared/demo';
 import type {
-  FundingConnection,
-  HistoricalObservations,
   Network,
   ReceiverEvidenceData,
-  ReportItem,
-  TimelineEvent,
 } from '../types';
 
 export const SCENARIO_RECEIVER_EVIDENCE: Record<ScenarioId, ReceiverEvidenceData> = {

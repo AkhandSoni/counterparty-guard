@@ -1,15 +1,13 @@
-import type { ScenarioId } from '@counterparty-guard/shared';
+import type { ScenarioId } from '@counterparty-guard/shared/demo';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { Header } from '../src/components/Header';
 import {
-  SCENARIO_RECEIVER_EVIDENCE,
   generateCustomReceiverEvidence,
-  getReceiverEvidence,
   getScenarioEvidence,
 } from '../src/data/mockReceiverEvidence';
-import type { Network, PendingWarningContext, ReportItem } from '../src/types';
+import type { Network, ReportItem } from '../src/types';
 import { CheckActionView } from '../src/views/CheckActionView';
 import { EvidenceTimeline } from '../src/views/EvidenceTimeline';
 import { type BlocklistRevisionItem, ReviewerPortal } from '../src/views/ReviewerPortal';

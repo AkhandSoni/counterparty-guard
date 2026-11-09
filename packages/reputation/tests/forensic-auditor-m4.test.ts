@@ -8,12 +8,9 @@ import {
   clusterDependenceGroups,
 } from '../src/graph/clustering.js';
 import {
-  DEFAULT_FAUCET_EXEMPTIONS,
   FaucetRegistry,
-  isFaucetExempted,
 } from '../src/graph/faucet.js';
 import {
-  type GraphEdge,
   InMemoryGraphProvider,
   traverseBoundedGraph,
 } from '../src/graph/traversal.js';
@@ -57,7 +54,7 @@ describe('Forensic Auditor Independent Integrity & Stress Tests (M4)', () => {
     it('CRITICAL: 1,000 raw unreviewed reports NEVER trigger isBlocked = true', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
 
       // Register and insert 1,000 unreviewed reports
       for (let i = 1; i <= 1000; i++) {
@@ -87,7 +84,7 @@ describe('Forensic Auditor Independent Integrity & Stress Tests (M4)', () => {
     it('CRITICAL: Expired active block does NOT trigger block', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
 
       // Insert block that expired 1 hour ago
       repo.createActiveBlock({
@@ -114,7 +111,7 @@ describe('Forensic Auditor Independent Integrity & Stress Tests (M4)', () => {
     it('CRITICAL: Code hash block triggers block when code hash matches', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
 
       const maliciousHash = 'bad_hash_99999999999999999999999999999999';
       repo.createActiveBlock({
@@ -128,7 +125,7 @@ describe('Forensic Auditor Independent Integrity & Stress Tests (M4)', () => {
 
       const rep = await getReceiverReputation({
         network: 'testnet',
-        accountId: 'different-account.testnet',
+        accountId: 'some-accused.testnet',
         contractCodeHash: maliciousHash,
         repository: repo,
         now,

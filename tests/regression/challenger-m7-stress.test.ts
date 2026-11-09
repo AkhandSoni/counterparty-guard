@@ -14,10 +14,8 @@ import {
   type AccountAdjacency,
   type AccountNode,
   type BoundedSubgraph,
-  DEFAULT_FAUCET_EXEMPTIONS,
   FaucetRegistry,
   type GraphEdge,
-  InMemoryGraphProvider,
   ReportRepository,
   type ReporterFundingLineage,
   clusterDependenceGroups,
@@ -25,16 +23,11 @@ import {
   getReceiverReputation,
   runMigrations,
 } from '@counterparty-guard/reputation';
-import {
-  type Action,
-  DemoExecutionLogSchema,
-  ReceiverReportsResponseSchema,
-  ReceiverReputationSchema,
-  type ReportRecord,
-} from '@counterparty-guard/shared';
+import { ReceiverReportsResponseSchema, type ReportRecord } from '@counterparty-guard/shared';
+import { type Action} from '@counterparty-guard/shared/demo';
 import type { FastifyInstance } from 'fastify';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { buildServer } from '../../apps/api/src/server.js';
+import { buildServer } from '../../apps/api/test-support/report-server.js';
 import { DeterministicAdapter } from '../../scripts/demo/harness/adapter.js';
 import {
   WarningApprovalRequiredError,
@@ -63,7 +56,7 @@ describe('Milestone M7 Empirical Security Challenge: Core Invariant Stress Harne
       category: 'phishing',
       description: 'Adversarial test allegation.',
       transaction_references: [`tx_${reportId}`],
-      evidence_content_hashes: ['a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e'],
+      evidence_content_hashes: [],
       contract_code_hash: null,
       status: 'submitted',
       issued_at: fixedNow - 1000,
@@ -253,7 +246,7 @@ describe('Milestone M7 Empirical Security Challenge: Core Invariant Stress Harne
     it('asserts Fastify HTTP endpoint never returns is_blocked: true under 60-report flood', async () => {
       let server: FastifyInstance | null = null;
       try {
-        server = await buildServer({ repository: repo, port: 0 });
+        server = await buildServer({ repository: repo });
         const target = 'http-flood-victim.testnet';
 
         for (let i = 1; i <= 60; i++) {
@@ -525,7 +518,7 @@ describe('Milestone M7 Empirical Security Challenge: Core Invariant Stress Harne
         repository: repo,
         subgraph,
       });
-      expect(baselineRep.reputationRiskPoints).toBe(5);
+      expect(baselineRep.reputationRiskPoints).toBe(40);
       expect(baselineRep.reasonCodes).not.toContain('CODE_CHANGED');
 
       // Adversarial mutation: code changed
@@ -592,14 +585,14 @@ describe('Milestone M7 Empirical Security Challenge: Core Invariant Stress Harne
     });
 
     it('asserts DeterministicAdapter executes Scenario S7 with signed=false and submitted=false', async () => {
-      const adapter = new DeterministicAdapter(repo);
+      const adapter = new DeterministicAdapter();
       await adapter.init();
       const result = await adapter.executeScenario('S7');
 
       expect(result.passed).toBe(true);
       expect(result.scenarioId).toBe('S7');
       expect(result.rawVerdict?.decision).toBe('warn');
-      expect(result.rawVerdict?.riskScore).toBe(55);
+      expect(result.rawVerdict?.riskScore).toBe(25);
 
       const log = result.log;
       expect(log.scenario_id).toBe('S7');

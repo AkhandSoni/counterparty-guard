@@ -1,10 +1,5 @@
-import {
-  ReasonCodeSchema,
-  ReportRecordSchema,
-  ScenarioDefinitionSchema,
-  type ScenarioId,
-  ScenarioIdSchema,
-} from '@counterparty-guard/shared';
+import '@counterparty-guard/shared';
+import { ScenarioDefinitionSchema, type ScenarioId} from '@counterparty-guard/shared/demo';
 import { describe, expect, it } from 'vitest';
 import {
   CANONICAL_SCENARIO_IDS,
@@ -74,9 +69,9 @@ describe('Deterministic Fixtures S1–S10 & Loader (fixtures/index.ts)', () => {
     it('S1 (Established Legitimate): produces allow, finalized transfer, clean history', () => {
       expect(s1Fixture.expected_decision).toBe('allow');
       expect(s1Fixture.expected_reason_codes).toEqual([]);
-      expect(s1Fixture.expected_signed).toBe(true);
-      expect(s1Fixture.expected_submitted).toBe(true);
-      expect(BigInt(s1Fixture.expected_balance_delta_yocto)).toBeGreaterThan(0n);
+      expect(s1Fixture.expected_signed).toBe(false);
+      expect(s1Fixture.expected_submitted).toBe(false);
+      expect(BigInt(s1Fixture.expected_balance_delta_yocto)).toBe(0n);
       expect(s1Fixture.proposed_action.receiver_id).toBe('merchant.testnet');
 
       const state = s1Fixture.initial_state as {
@@ -236,10 +231,10 @@ describe('Deterministic Fixtures S1–S10 & Loader (fixtures/index.ts)', () => {
       expect(s10Fixture.expected_decision).toBe('allow');
       expect(s10Fixture.proposed_action.kind).toBe('contract_call');
       if (s10Fixture.proposed_action.kind === 'contract_call') {
-        expect(s10Fixture.proposed_action.method_name).toBe('claim_service');
+        expect(s10Fixture.proposed_action.method_name).toBe('accept_memo');
       }
-      expect(s10Fixture.expected_signed).toBe(true);
-      expect(s10Fixture.expected_submitted).toBe(true);
+      expect(s10Fixture.expected_signed).toBe(false);
+      expect(s10Fixture.expected_submitted).toBe(false);
 
       const state = s10Fixture.initial_state as {
         supported_methods: string[];

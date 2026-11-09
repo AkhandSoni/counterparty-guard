@@ -62,7 +62,7 @@ export const ExecutionPermitSchema = z.object({
 export type ExecutionPermit = z.infer<typeof ExecutionPermitSchema>;
 
 export const CheckResponseSchema = z.object({
-  check_id: z.string().uuid(),
+  check_id: z.guid(),
   schema_version: z.number().int().default(1),
   agent_id: z.string(),
   decision: DecisionSchema,

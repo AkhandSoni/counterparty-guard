@@ -2,7 +2,6 @@ import type { ReportRecord } from '@counterparty-guard/shared';
 import { describe, expect, it } from 'vitest';
 import { type ReporterFundingLineage, clusterDependenceGroups } from '../src/graph/clustering.js';
 import {
-  DEFAULT_FAUCET_EXEMPTIONS,
   FaucetRegistry,
   isFaucetExempted,
 } from '../src/graph/faucet.js';

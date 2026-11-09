@@ -36,6 +36,7 @@ export interface ClusteringResult {
   sybilDiscountApplied: boolean;
   sybilDiscountAmount: number; // totalRawReports - totalEffectiveWeight
   hasFaucetExemptions: boolean;
+  explanations: string[];
   reasonCodes: string[]; // e.g. ['DEPENDENT_REPORTS'], ['COMMON_FAUCET_EXEMPTED']
 }
 
@@ -185,6 +186,17 @@ export function clusterDependenceGroups(options: ClusterDependenceGroupsOptions)
     reporterToReports.set(repId, existing);
   }
 
+  // One chain event is one source, even when multiple identities repeat it.
+  const explanations: string[] = [];
+  const evidenceOwner = new Map<string, string>();
+  for (const report of reports) {
+    const reporter = report.reporter_id.trim().toLowerCase();
+    for (const ref of [...report.transaction_references.map(value => `chain:${value.trim()}`), ...report.evidence_content_hashes.map(value => `content:${value.trim()}`)]) {
+      const prior = evidenceOwner.get(ref);
+      if (prior) { dsu.union(reporter, prior); explanations.push(`Reports by ${reporter} and ${prior} reuse evidence ${ref}.`); }
+      else evidenceOwner.set(ref, reporter);
+    }
+  }
   let observedFaucetInLineage = false;
 
   // 2. Correlate reporters via common non-faucet funders and transfers
@@ -209,7 +221,12 @@ export function clusterDependenceGroups(options: ClusterDependenceGroupsOptions)
     for (const funder of cleanFunders) {
       const priorReporter = nonFaucetFunderToFirstReporter.get(funder);
       if (priorReporter) {
-        dsu.union(reporterId, priorReporter);
+        const priorLineage = lineages.get(priorReporter);
+        const sameKey = (reporterToReports.get(reporterId) ?? []).some(report => (reporterToReports.get(priorReporter) ?? []).some(prior => report.reporter_public_key === prior.reporter_public_key));
+        const related = lineage.transferPeers.includes(priorReporter) || priorLineage?.transferPeers.includes(reporterId) || sameKey;
+        // Shared funding alone does not establish dependence. Duplicate evidence
+        // has already been grouped independently of funding above.
+        if (related) { dsu.union(reporterId, priorReporter); explanations.push(`Shared funder ${funder} plus ${sameKey ? 'the same report signing key' : 'direct transfers between reporters'} links ${reporterId} and ${priorReporter}.`); }
       } else {
         nonFaucetFunderToFirstReporter.set(funder, reporterId);
       }
@@ -261,7 +278,7 @@ export function clusterDependenceGroups(options: ClusterDependenceGroupsOptions)
 
     const groupId = isMultiMember
       ? generateGroupId(commonFunderId, memberReporters)
-      : (clusterReports[0].dependence_group_id ?? `singleton_${memberReporters[0]}`);
+      : (clusterReports[0]!.dependence_group_id ?? `singleton_${memberReporters[0]}`);
 
     // Group Weight Capping Invariant: Aggregate weight is capped at at most 1.0
     const aggregateGroupWeight = Math.min(1.0, isMultiMember ? 1.0 : clusterReports.length * 1.0);
@@ -311,6 +328,7 @@ export function clusterDependenceGroups(options: ClusterDependenceGroupsOptions)
     sybilDiscountAmount,
     hasFaucetExemptions: observedFaucetInLineage,
     reasonCodes,
+    explanations: [...new Set(explanations)].slice(0, 32),
   };
 
   // Persist if repository provided

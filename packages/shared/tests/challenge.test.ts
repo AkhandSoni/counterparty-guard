@@ -1,8 +1,7 @@
 import bs58 from 'bs58';
-import nacl from 'tweetnacl';
+
 import { describe, expect, it } from 'vitest';
 import {
-  formatPublicKey,
   formatSignature,
   generateKeyPair,
   parsePublicKey,
@@ -18,29 +17,14 @@ import {
   verifyReportSignature,
 } from '../src/crypto/report-signing.js';
 import {
-  CheckRequestSchema,
   CheckResponseSchema,
-  ContractCallActionSchema,
-  ExecutionPermitSchema,
-  ReasonCodeSchema,
 } from '../src/schemas/check.js';
 import {
-  DependenceGroupSummarySchema,
-  GetReportResponseSchema,
-  ReceiverReportsResponseSchema,
   ReceiverReputationSchema,
-  ReportRecordSchema,
-  ReviewReportRequestSchema,
-  ReviewReportResponseSchema,
   type SubmitReportRequest,
   SubmitReportRequestSchema,
-  SubmitReportResponseSchema,
 } from '../src/schemas/report.js';
-import {
-  DemoExecutionLogSchema,
-  ScenarioDefinitionSchema,
-  ScenarioIdSchema,
-} from '../src/schemas/scenario.js';
+import '../src/schemas/scenario.js';
 
 describe('Adversarial Challenge & Stress Tests', () => {
   const kp = generateKeyPair();

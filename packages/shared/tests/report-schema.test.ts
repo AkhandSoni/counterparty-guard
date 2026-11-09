@@ -1,14 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { generateKeyPair, signDetached } from '../src/crypto/ed25519.js';
 import {
-  DependenceGroupSummarySchema,
   GetReportResponseSchema,
   ReceiverReportsResponseSchema,
   ReceiverReputationSchema,
   ReportDetailResponseSchema,
   ReportReviewResponseSchema,
   ReportSubmitResponseSchema,
-  ReportSummarySchema,
   ReviewReportRequestSchema,
   ReviewReportResponseSchema,
   SubmitReportRequestSchema,

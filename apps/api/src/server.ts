@@ -1,104 +1,51 @@
-import type { DatabaseSync } from 'node:sqlite';
-import { ReportRepository, createDatabase, runMigrations } from '@counterparty-guard/reputation';
-import cors from '@fastify/cors';
-import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
-import type { ReviewerAuthConfig } from './auth/reviewer-auth.js';
-import { reportsRoutes } from './routes/reports.js';
+import { createPrivateKey } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { publicKeyFromKeyObject, signPermit, type ReceiverEvidence } from '@counterparty-guard/shared';
+import { createApp } from './app.js';
+import { loadConfig } from './config.js';
+import { GuardStore } from './storage/store.js';
+import { ReportRepository, createReputationProvider } from '@counterparty-guard/reputation';
+import { createReportsPlugin } from './routes/reports.js';
 
-import type { GraphDataProvider, ReporterFundingLineage } from '@counterparty-guard/reputation';
-
-export interface ServerOptions {
-  repository?: ReportRepository;
-  db?: DatabaseSync;
-  now?: () => number;
-  reviewerAuth?: ReviewerAuthConfig;
-  graphDataProvider?: GraphDataProvider;
-  lineages?:
-    | Map<string, ReporterFundingLineage>
-    | ((account: string) => Map<string, ReporterFundingLineage>);
-  logger?: boolean | object;
+/** Standalone local fixture process. Live service assembly injects B/C-owned adapters separately. */
+async function start(): Promise<void> {
+  const config = loadConfig();
+  const key = createPrivateKey(readFileSync(config.fixture.scorer_key_file));
+  if (key.asymmetricKeyType !== 'ed25519') throw new Error('Expected an Ed25519 scorer key');
+  const store = new GuardStore(config.databasePath);
+  for (const registration of config.fixture.agents) store.registerAgent(registration);
+  const app = createApp({
+    store, sourceMode: 'fixture', scorerPublicKey: publicKeyFromKeyObject(key),
+    signPermit: payload => signPermit(payload, key),
+    receiverProvider: {
+      sourceMode: 'fixture',
+      async assess(input) {
+        const fixture = config.fixture.receivers.find(receiver => receiver.network === input.network && receiver.account_id === input.account_id);
+        if (!fixture) throw new Error('Fixture receiver not configured');
+        const timestamp = Date.now();
+        const evidence: ReceiverEvidence = structuredClone(fixture);
+        evidence.observed_at = timestamp;
+        // These are visibly fixture observations, never claims of live chain freshness.
+        evidence.observations = evidence.observations.map(observation => ({ ...observation, fetched_at: timestamp, source_timestamp: timestamp }));
+        return evidence;
+      },
+    },
+    policyProvider: { async getPolicy() { return { ...config.fixture.policy, observed_at: Date.now() }; } },
+    reputationProvider: createReputationProvider(new ReportRepository(store.database)),
+    reportPlugin: createReportsPlugin(),
+    reviewerCredentialHash: config.fixture.reviewer_credential_hash,
+  });
+  let closing = false;
+  const close = async (): Promise<void> => {
+    if (closing) return;
+    closing = true;
+    await app.close();
+    store.close();
+  };
+  process.once('SIGINT', () => { void close(); });
+  process.once('SIGTERM', () => { void close(); });
+  try { await app.listen({ host: config.host, port: config.port }); }
+  catch (error) { await close(); throw error; }
+  process.stdout.write(`Counterparty Guard fixture API listening on ${config.host}:${config.port}; no chain execution configured\n`);
 }
-
-export async function buildServer(options: ServerOptions = {}): Promise<FastifyInstance> {
-  const fastify = Fastify({
-    logger: options.logger ?? false,
-  });
-
-  // Register CORS to enable frontend communication from apps/web
-  await fastify.register(cors, {
-    origin: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'x-reviewer-id',
-      'x-reviewer-token',
-      'x-csrf-token',
-    ],
-  });
-
-  // Setup Database & Repository
-  const db = options.db ?? createDatabase({ path: ':memory:' });
-  if (!options.repository) {
-    runMigrations(db);
-  }
-  const repository = options.repository ?? new ReportRepository(db);
-
-  // Health check endpoint
-  fastify.get('/health', async () => ({
-    status: 'ok',
-    timestamp: options.now ? options.now() : Date.now(),
-  }));
-
-  // Register Report Routes
-  await fastify.register(reportsRoutes, {
-    repository,
-    now: options.now,
-    reviewerAuth: options.reviewerAuth,
-    graphDataProvider: options.graphDataProvider,
-    lineages: options.lineages,
-  });
-
-  // Global error handler
-  fastify.setErrorHandler((error: FastifyError, _request, reply) => {
-    if (error.validation) {
-      return reply.status(400).send({
-        error: 'VALIDATION_ERROR',
-        message: error.message,
-        details: error.validation,
-      });
-    }
-
-    if (error.statusCode) {
-      return reply.status(error.statusCode).send({
-        error: error.name || 'HTTP_ERROR',
-        message: error.message,
-      });
-    }
-
-    fastify.log.error(error);
-    return reply.status(500).send({
-      error: 'INTERNAL_SERVER_ERROR',
-      message: error.message || 'An unexpected server error occurred.',
-    });
-  });
-
-  return fastify;
-}
-
-const isMain =
-  process.argv[1] &&
-  (process.argv[1].endsWith('server.ts') || process.argv[1].endsWith('server.js'));
-
-if (isMain) {
-  const port = Number(process.env.PORT || 3001);
-  const host = process.env.HOST || '0.0.0.0';
-  const server = await buildServer({ logger: true });
-  try {
-    await server.listen({ port, host });
-    console.log(`API server listening on http://${host}:${port}`);
-  } catch (err) {
-    server.log.error(err);
-    process.exit(1);
-  }
-}
+start().catch(() => { process.stderr.write('Counterparty Guard could not start; check local configuration and dependency availability\n'); process.exitCode = 1; });

@@ -6,24 +6,21 @@
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import {
-  DecisionSchema,
-  type DemoExecutionLog,
-  DemoExecutionLogSchema,
-  ScenarioIdSchema,
-} from '@counterparty-guard/shared';
+import { DecisionSchema, type DemoExecutionLog, DemoExecutionLogSchema, ScenarioIdSchema } from '@counterparty-guard/shared/demo';
 import { z } from 'zod';
 
 /**
  * Audit log entry schema conforming strictly to PROJECT.md § Interface Contracts 3.
  */
 export const AuditLogRecordSchema = z.object({
-  run_id: z.string().uuid(),
+  run_id: z.guid(),
   timestamp: z.string().datetime().or(z.string()),
   scenario_id: ScenarioIdSchema,
   mode: z.enum(['deterministic', 'sandbox', 'testnet']),
   injected_prompt_hash: z.string().regex(/^sha256:[a-f0-9]{64}$/),
-  decision: DecisionSchema,
+  decision: DecisionSchema.or(z.literal('error')),
+  source_mode: z.literal('fixture').nullable().default('fixture'),
+  execution_environment: z.literal('not-executed').default('not-executed'),
   reason_codes: z.array(z.string()),
   permit_hash: z.string().nullable(),
   signed: z.boolean(),
@@ -43,7 +40,7 @@ export const AuditLogRecordSchema = z.object({
   error_message: z.string().nullable().optional(),
 });
 
-export type AuditLogRecord = z.infer<typeof AuditLogRecordSchema>;
+export type AuditLogRecord = z.input<typeof AuditLogRecordSchema>;
 
 /**
  * Computes deterministic SHA-256 digest of untrusted prompt content.
@@ -66,7 +63,7 @@ export class JsonlLogger {
   private readonly verbose: boolean;
 
   constructor(options: LoggerOptions = {}) {
-    this.logFilePath = options.logFilePath ?? 'docs/demo-logs/attack-demo.jsonl';
+    this.logFilePath = options.logFilePath ?? 'artifacts/demo/attack-demo.jsonl';
     this.echoToConsole = options.echoToConsole ?? true;
     this.verbose = options.verbose ?? false;
   }

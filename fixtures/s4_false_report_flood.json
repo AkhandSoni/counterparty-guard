@@ -1,7 +1,7 @@
 {
   "id": "S4",
   "name": "False-Report Flood Attack",
-  "description": "Coordinated false-report flood attack with 20 Sybil accounts sharing common funder; Sybil discount caps aggregate weight to 1.0; no hard block triggered.",
+  "description": "Synthetic offline assessment fixture. Coordinated false-report flood attack with 20 Sybil accounts sharing common funder; Sybil discount caps aggregate weight to 1.0; no hard block triggered.",
   "security_invariant": "Raw report volume from coordinated Sybil clusters must be discounted to the weight of a single independent source (1.0) and can NEVER manufacture hard-block authority without reviewer moderation.",
   "network": "testnet",
   "proposed_action": {
@@ -10,10 +10,12 @@
     "amount_yocto": "50000000000000000000000"
   },
   "expected_decision": "allow",
-  "expected_reason_codes": ["DEPENDENT_REPORTS"],
-  "expected_signed": true,
-  "expected_submitted": true,
-  "expected_balance_delta_yocto": "50000000000000000000000",
+  "expected_reason_codes": [
+    "DEPENDENT_REPORTS"
+  ],
+  "expected_signed": false,
+  "expected_submitted": false,
+  "expected_balance_delta_yocto": "0",
   "initial_state": {
     "receiver_id": "popular-service.testnet",
     "account_age_days": 238,
@@ -50,7 +52,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #1 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_01"],
+        "transaction_references": [
+          "tx_sybil_claim_01"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -59,7 +63,7 @@
         "issued_at": 1792944060000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_01",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792944060000
       },
@@ -71,7 +75,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #2 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_02"],
+        "transaction_references": [
+          "tx_sybil_claim_02"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -80,7 +86,7 @@
         "issued_at": 1792944120000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_02",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792944120000
       },
@@ -92,7 +98,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #3 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_03"],
+        "transaction_references": [
+          "tx_sybil_claim_03"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -101,7 +109,7 @@
         "issued_at": 1792944180000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_03",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792944180000
       },
@@ -113,7 +121,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #4 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_04"],
+        "transaction_references": [
+          "tx_sybil_claim_04"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -122,7 +132,7 @@
         "issued_at": 1792944240000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_04",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792944240000
       },
@@ -134,7 +144,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #5 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_05"],
+        "transaction_references": [
+          "tx_sybil_claim_05"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -143,7 +155,7 @@
         "issued_at": 1792944300000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_05",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792944300000
       },
@@ -155,7 +167,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #6 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_06"],
+        "transaction_references": [
+          "tx_sybil_claim_06"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -164,7 +178,7 @@
         "issued_at": 1792944360000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_06",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792944360000
       },
@@ -176,7 +190,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #7 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_07"],
+        "transaction_references": [
+          "tx_sybil_claim_07"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -185,7 +201,7 @@
         "issued_at": 1792944420000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_07",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792944420000
       },
@@ -197,7 +213,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #8 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_08"],
+        "transaction_references": [
+          "tx_sybil_claim_08"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -206,7 +224,7 @@
         "issued_at": 1792944480000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_08",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792944480000
       },
@@ -218,7 +236,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #9 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_09"],
+        "transaction_references": [
+          "tx_sybil_claim_09"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -227,7 +247,7 @@
         "issued_at": 1792944540000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_09",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792944540000
       },
@@ -239,7 +259,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #10 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_10"],
+        "transaction_references": [
+          "tx_sybil_claim_10"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -248,7 +270,7 @@
         "issued_at": 1792944600000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_10",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792944600000
       },
@@ -260,7 +282,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #11 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_11"],
+        "transaction_references": [
+          "tx_sybil_claim_11"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -269,7 +293,7 @@
         "issued_at": 1792944660000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_11",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792944660000
       },
@@ -281,7 +305,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #12 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_12"],
+        "transaction_references": [
+          "tx_sybil_claim_12"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -290,7 +316,7 @@
         "issued_at": 1792944720000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_12",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792944720000
       },
@@ -302,7 +328,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #13 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_13"],
+        "transaction_references": [
+          "tx_sybil_claim_13"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -311,7 +339,7 @@
         "issued_at": 1792944780000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_13",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792944780000
       },
@@ -323,7 +351,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #14 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_14"],
+        "transaction_references": [
+          "tx_sybil_claim_14"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -332,7 +362,7 @@
         "issued_at": 1792944840000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_14",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792944840000
       },
@@ -344,7 +374,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #15 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_15"],
+        "transaction_references": [
+          "tx_sybil_claim_15"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -353,7 +385,7 @@
         "issued_at": 1792944900000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_15",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792944900000
       },
@@ -365,7 +397,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #16 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_16"],
+        "transaction_references": [
+          "tx_sybil_claim_16"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -374,7 +408,7 @@
         "issued_at": 1792944960000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_16",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792944960000
       },
@@ -386,7 +420,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #17 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_17"],
+        "transaction_references": [
+          "tx_sybil_claim_17"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -395,7 +431,7 @@
         "issued_at": 1792945020000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_17",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792945020000
       },
@@ -407,7 +443,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #18 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_18"],
+        "transaction_references": [
+          "tx_sybil_claim_18"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -416,7 +454,7 @@
         "issued_at": 1792945080000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_18",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792945080000
       },
@@ -428,7 +466,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #19 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_19"],
+        "transaction_references": [
+          "tx_sybil_claim_19"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -437,7 +477,7 @@
         "issued_at": 1792945140000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_19",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792945140000
       },
@@ -449,7 +489,9 @@
         "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
         "category": "phishing",
         "description": "Coordinated duplicate report #20 alleging phishing signature requests.",
-        "transaction_references": ["tx_sybil_claim_20"],
+        "transaction_references": [
+          "tx_sybil_claim_20"
+        ],
         "evidence_content_hashes": [
           "a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e"
         ],
@@ -458,7 +500,7 @@
         "issued_at": 1792945200000,
         "expires_at": 1793034000000,
         "nonce": "nonce_rep_sybil_20",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": "group_funder_sybil_parent",
         "created_at": 1792945200000
       }
@@ -631,6 +673,7 @@
       "nonce": "nonce_s4_99x87z",
       "policy_revision": 7,
       "blocklist_revision": 7
-    }
+    },
+    "independent_successful_counterparties": 15
   }
 }

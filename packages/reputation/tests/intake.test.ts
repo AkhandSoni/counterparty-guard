@@ -354,7 +354,7 @@ describe('Signed Report Intake Pipeline (intake.test.ts)', () => {
     it('persists report and registers reporter in real SQLite database', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
 
       const kp = generateKeyPair();
       const { signedPayload } = createValidPayload(kp);

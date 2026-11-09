@@ -1,87 +1,28 @@
+import { createHash, timingSafeEqual } from 'node:crypto';
 import type { ReviewerContext } from '@counterparty-guard/reputation';
 import type { FastifyReply, FastifyRequest } from 'fastify';
-
 export interface ReviewerAuthConfig {
   reviewerTokens?: string[];
   defaultReviewerId?: string;
+  credentials?: { token: string; reviewer_id: string; role: 'reviewer' | 'admin' }[];
 }
-
-export function extractReviewerContext(
-  request: FastifyRequest,
-  config: ReviewerAuthConfig = {},
-): ReviewerContext {
-  const authHeader = request.headers.authorization;
-  const customReviewerToken = request.headers['x-reviewer-token'] as string | undefined;
-  const customReviewerId =
-    (request.headers['x-reviewer-id'] as string | undefined) ||
-    config.defaultReviewerId ||
-    'moderator.testnet';
-
-  const token =
-    customReviewerToken ||
-    (authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : undefined);
-
-  if (!token) {
-    return {
-      reviewer_id: customReviewerId,
-      role: 'reviewer',
-      authenticated: false,
-    };
-  }
-
-  // Agent tokens are explicitly identified and rejected from reviewer operations
-  if (token.startsWith('agent-') || token.includes('agent_token')) {
-    return {
-      reviewer_id: 'automated_agent',
-      role: 'reviewer',
-      authenticated: false,
-    };
-  }
-
-  let isValidToken = false;
-  if (config.reviewerTokens !== undefined) {
-    isValidToken = config.reviewerTokens.includes(token);
-  } else {
-    const validTokens = [
-      'reviewer-secret-token',
-      'moderator-secret-key',
-      'admin-super-token',
-      'mock-reviewer-token',
-    ];
-    isValidToken =
-      validTokens.includes(token) || token.startsWith('reviewer-') || token.startsWith('admin-');
-  }
-
-  if (isValidToken) {
-    return {
-      reviewer_id: customReviewerId,
-      role: token.startsWith('admin-') ? 'admin' : 'reviewer',
-      authenticated: true,
-    };
-  }
-
-  return {
-    reviewer_id: customReviewerId,
-    role: 'reviewer',
-    authenticated: false,
-  };
+const hash = (token: string) => createHash('sha256').update(token).digest();
+/** Fixture route tests may inject credentials. Production uses A's separate reviewer authenticator. */
+export function extractReviewerContext(request: FastifyRequest, config: ReviewerAuthConfig = {}): ReviewerContext {
+  const header = request.headers.authorization;
+  const custom = request.headers['x-reviewer-token'];
+  const token = typeof custom === 'string' ? custom : typeof header === 'string' && header.startsWith('Bearer ') ? header.slice(7).trim() : '';
+  const denied: ReviewerContext = { reviewer_id: 'unauthenticated', role: 'reviewer', authenticated: false };
+  if (!token || token.length > 512) return denied;
+  const credentials = config.credentials ?? (config.reviewerTokens ?? []).map(value => ({ token: value, reviewer_id: config.defaultReviewerId ?? 'configured-reviewer', role: 'reviewer' as const }));
+  const credential = credentials.find(value => timingSafeEqual(hash(value.token), hash(token)));
+  return credential ? { reviewer_id: credential.reviewer_id, role: credential.role, authenticated: true } : denied;
 }
-
-export async function requireReviewerAuth(
-  request: FastifyRequest,
-  reply: FastifyReply,
-  config: ReviewerAuthConfig = {},
-): Promise<ReviewerContext> {
+export async function requireReviewerAuth(request: FastifyRequest, reply: FastifyReply, config: ReviewerAuthConfig = {}): Promise<ReviewerContext> {
   const context = extractReviewerContext(request, config);
-
   if (!context.authenticated) {
-    reply.status(403).send({
-      error: 'FORBIDDEN',
-      message:
-        'Unauthorized: Active hard blocks and report reviews require authenticated human reviewer authority. Agent tokens are not permitted.',
-    });
+    reply.status(403).send({ error: 'FORBIDDEN', message: 'Configured reviewer authority is required' });
     throw new Error('AUTH_FORBIDDEN');
   }
-
   return context;
 }

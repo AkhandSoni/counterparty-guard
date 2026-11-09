@@ -1,3 +1,4 @@
+import 'node:crypto';
 import {
   InMemoryGraphProvider,
   ReportRepository,
@@ -11,7 +12,7 @@ import {
 } from '@counterparty-guard/shared';
 import type { FastifyInstance } from 'fastify';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { buildServer } from '../src/server.js';
+import { buildServer } from '../test-support/report-server.js';
 
 describe('Reports API Service (apps/api/tests/reports.test.ts)', () => {
   let server: FastifyInstance;
@@ -30,7 +31,7 @@ describe('Reports API Service (apps/api/tests/reports.test.ts)', () => {
       category: 'drainer',
       description: 'Unauthorized sweep of contract balance using exploit permit.',
       transaction_references: ['9XyZ1234567890abcdef', '1AbCdEfGhIjKlMnOpQrS'],
-      evidence_content_hashes: ['e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'],
+      evidence_content_hashes: [],
       contract_code_hash: null,
       issued_at: now - 60_000,
       expires_at: now + 600_000,
@@ -49,7 +50,7 @@ describe('Reports API Service (apps/api/tests/reports.test.ts)', () => {
   beforeEach(async () => {
     const db = createDatabase({ path: ':memory:' });
     runMigrations(db);
-    repository = new ReportRepository(db);
+    repository = new ReportRepository(db, () => now);
 
     server = await buildServer({
       repository,
@@ -73,7 +74,7 @@ describe('Reports API Service (apps/api/tests/reports.test.ts)', () => {
       expect(body.timestamp).toBe(now);
     });
 
-    it('sets CORS headers on requests', async () => {
+    it('does not expose permissive cross-origin preflight', async () => {
       const res = await server.inject({
         method: 'OPTIONS',
         url: '/v1/reports',
@@ -83,8 +84,8 @@ describe('Reports API Service (apps/api/tests/reports.test.ts)', () => {
         },
       });
 
-      expect(res.statusCode).toBe(204);
-      expect(res.headers['access-control-allow-origin']).toBe('http://localhost:5173');
+      expect(res.statusCode).toBe(404);
+      expect(res.headers['access-control-allow-origin']).toBeUndefined();
     });
   });
 
@@ -509,6 +510,7 @@ describe('Reports API Service (apps/api/tests/reports.test.ts)', () => {
       const expiringServer = await buildServer({
         repository,
         now: () => currentTime,
+        reviewerAuth: { reviewerTokens: ['reviewer-secret-token'] },
       });
 
       const kp = generateKeyPair();
@@ -604,7 +606,7 @@ describe('Reports API Service (apps/api/tests/reports.test.ts)', () => {
       const block = repository.getActiveBlock('testnet', 'drainer-malicious.testnet');
       expect(block).not.toBeNull();
       expect(block?.is_active).toBe(1);
-      expect(block?.reviewer_id).toBe('security-lead.testnet');
+      expect(block?.reviewer_id).toBe('configured-reviewer');
 
       // Verify report status updated
       const updatedReport = repository.getReport(reportId);
@@ -860,6 +862,8 @@ describe('Reports API Service (apps/api/tests/reports.test.ts)', () => {
         const { signedPayload } = createValidPayload(generateKeyPair(), {
           accused_account_id: target,
           reporter_id: reporterId,
+          transaction_references: [`fixture:independent-faucet-event-${i}`],
+          evidence_content_hashes: [],
         });
 
         await server.inject({

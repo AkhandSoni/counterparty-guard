@@ -1,15 +1,10 @@
-import {
-  CheckResponseSchema,
-  ExecutionPermitSchema,
-  type ScenarioId,
-} from '@counterparty-guard/shared';
+import { CheckResponseSchema, type ScenarioId } from '@counterparty-guard/shared/demo';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import {
   type ActionParams,
   FixtureMockAdapter,
-  isCanonicalPermitHash,
   mockAdapter,
   nearToYocto,
 } from '../src/adapters/mockAdapter';
@@ -48,17 +43,9 @@ describe('Empirical Adversarial Challenge Suite (Milestone M2)', () => {
               : toResult.canonicalResponse.decision;
           expect(toResult.verdict.decision).toBe(expectedVerdict);
 
-          // Verify permit schema conformance for permitted scenarios
-          if (['S1', 'S2', 'S4', 'S5', 'S6', 'S7', 'S10'].includes(toId)) {
-            expect(toResult.permit).not.toBeNull();
-            const permitHash = toResult.permit?.canonicalHash || '';
-            expect(isCanonicalPermitHash(permitHash)).toBe(true);
-            expect(ExecutionPermitSchema.safeParse(toResult.permit?.canonical).success).toBe(true);
-          } else {
-            // S3, S8, S9 must have null permit
-            expect(toResult.permit).toBeNull();
-            expect(toResult.canonicalResponse.permit).toBeNull();
-          }
+          // Offline display transitions never mint a signed authorization.
+          expect(toResult.permit).toBeNull();
+          expect(toResult.canonicalResponse.permit).toBeNull();
         }
       }
     });

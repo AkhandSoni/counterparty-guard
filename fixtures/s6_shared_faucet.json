@@ -1,7 +1,7 @@
 {
   "id": "S6",
   "name": "Shared Common Faucet Control",
-  "description": "Unrelated accounts sharing common testnet faucet funder (faucet.testnet); faucet exemption registry active; full independent weights preserved with no penalty.",
+  "description": "Synthetic offline assessment fixture. Unrelated accounts sharing common testnet faucet funder (faucet.testnet); faucet exemption registry active; full independent weights preserved with no penalty.",
   "security_invariant": "Legitimate shared infrastructure (such as official testnet faucets or exchanges) must be exempted from Sybil clustering and must NEVER penalize innocent counterparties.",
   "network": "testnet",
   "proposed_action": {
@@ -10,10 +10,12 @@
     "amount_yocto": "50000000000000000000000"
   },
   "expected_decision": "allow",
-  "expected_reason_codes": ["COMMON_FAUCET_EXEMPTED"],
-  "expected_signed": true,
-  "expected_submitted": true,
-  "expected_balance_delta_yocto": "50000000000000000000000",
+  "expected_reason_codes": [
+    "COMMON_FAUCET_EXEMPTED"
+  ],
+  "expected_signed": false,
+  "expected_submitted": false,
+  "expected_balance_delta_yocto": "0",
   "initial_state": {
     "receiver_id": "user-b.testnet",
     "account_age_days": 29,
@@ -57,6 +59,7 @@
       "nonce": "nonce_s6_faucet0",
       "policy_revision": 7,
       "blocklist_revision": 7
-    }
+    },
+    "independent_successful_counterparties": 15
   }
 }

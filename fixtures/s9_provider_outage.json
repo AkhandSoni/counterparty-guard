@@ -1,7 +1,7 @@
 {
   "id": "S9",
   "name": "Provider Outage / Stale Input",
-  "description": "Mandatory NEAR RPC provider unreachable or times out after 60s; system fails closed safely with typed error; no permit created.",
+  "description": "Synthetic offline assessment fixture. Mandatory NEAR RPC provider unreachable or times out after 60s; system fails closed safely with typed error; no permit created.",
   "security_invariant": "Fail-closed invariant: Under mandatory source unavailability or stale provider feeds, the system must refuse to issue permits and refuse transaction dispatch.",
   "network": "testnet",
   "proposed_action": {
@@ -10,7 +10,10 @@
     "amount_yocto": "50000000000000000000000"
   },
   "expected_decision": "infrastructure_error",
-  "expected_reason_codes": ["INCOMPLETE_HISTORY", "MANDATORY_SOURCE_UNAVAILABLE"],
+  "expected_reason_codes": [
+    "INCOMPLETE_HISTORY",
+    "MANDATORY_SOURCE_UNAVAILABLE"
+  ],
   "expected_signed": false,
   "expected_submitted": false,
   "expected_balance_delta_yocto": "0",
@@ -26,6 +29,7 @@
       "window_days": 7
     },
     "reports": [],
-    "canonical_permit": null
+    "canonical_permit": null,
+    "independent_successful_counterparties": 0
   }
 }

@@ -1,19 +1,21 @@
 {
   "id": "S7",
   "name": "Upgraded Contract Receiver",
-  "description": "Contract bytecode hash upgraded since prior interaction (CODE_CHANGED); forces warning reassessment despite positive historical reputation.",
+  "description": "Synthetic offline assessment fixture. Contract bytecode hash upgraded since prior interaction (CODE_CHANGED); forces warning reassessment despite positive historical reputation.",
   "security_invariant": "Bytecode replacement on a contract target invalidates prior approval history and forces human warning re-approval before executing transactions against the new code.",
   "network": "testnet",
   "proposed_action": {
     "kind": "contract_call",
     "receiver_id": "contract.testnet",
-    "method_name": "claim_reward",
-    "args_base64": "eyJpZCI6MTAxfQ==",
+    "method_name": "accept_memo",
+    "args_base64": "eyJtZW1vIjoic3ludGhldGljIGRlbW8ifQ==",
     "attached_deposit_yocto": "50000000000000000000000",
     "gas_tgas": 30
   },
   "expected_decision": "warn",
-  "expected_reason_codes": ["CODE_CHANGED"],
+  "expected_reason_codes": [
+    "CODE_CHANGED"
+  ],
   "expected_signed": false,
   "expected_submitted": false,
   "expected_balance_delta_yocto": "0",
@@ -55,6 +57,7 @@
       "nonce": "nonce_s7_upgraded",
       "policy_revision": 7,
       "blocklist_revision": 7
-    }
+    },
+    "independent_successful_counterparties": 15
   }
 }

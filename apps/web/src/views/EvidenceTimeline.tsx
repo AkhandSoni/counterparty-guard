@@ -1,4 +1,4 @@
-import type { ScenarioId } from '@counterparty-guard/shared';
+import type { ScenarioId } from '@counterparty-guard/shared/demo';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { DecisionBadge } from '../components/Badge';
@@ -6,7 +6,6 @@ import {
   ActivityIcon,
   AlertTriangleIcon,
   BanIcon,
-  CheckCircleIcon,
   CheckIcon,
   CopyIcon,
   ShieldAlertIcon,
@@ -22,9 +21,7 @@ import type {
   Network,
   ReceiverEvidenceData,
   ReportCategory,
-  ReportItem,
   ReportStatus,
-  TimelineEvent,
 } from '../types';
 
 export interface EvidenceTimelineProps {

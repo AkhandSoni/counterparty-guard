@@ -1,7 +1,7 @@
-# packages/scoring
+# Deterministic scoring
 
 Owner: **A; C reviews evidence weighting**.
 
-Pure deterministic decisions and explainable feature contributions.
+Implemented pure `scoreAssessment` with mandatory-source freshness, checked action policy, reviewed-block precedence, capped explainable features and forced code-change warnings. Live positive activity credit requires C’s justified reputation output.
 
-Status: planning marker only; no implementation or passing tests are implied. See [the implementation plan](../../docs/person-a-plan.md) and the root ownership rules before adding code.
+See [scoring rules](../../docs/scoring.md), [integration contracts](../../docs/integration-contracts.md), and [validation/handoff](../../docs/person-a-handoff.md).

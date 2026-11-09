@@ -3,8 +3,8 @@ import type { Network } from '../types';
 import { ShieldCheckIcon } from './Icons';
 
 interface HeaderProps {
-  activeTab: 'checks' | 'evidence' | 'approvals' | 'moderation';
-  setActiveTab: (tab: 'checks' | 'evidence' | 'approvals' | 'moderation') => void;
+  activeTab: 'api' | 'checks' | 'evidence' | 'approvals' | 'moderation';
+  setActiveTab: (tab: 'api' | 'checks' | 'evidence' | 'approvals' | 'moderation') => void;
   network: Network;
   setNetwork: (network: Network) => void;
 }
@@ -13,7 +13,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, network
   return (
     <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 py-3">
           {/* Brand */}
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-cyan-950 border border-cyan-800 text-cyan-400">
@@ -31,7 +31,8 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, network
           </div>
 
           {/* Navigation Tabs */}
-          <nav className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+          <nav className="flex flex-wrap items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 max-w-full">
+            <button type="button" onClick={() => setActiveTab('api')} className="px-3 py-1.5 rounded-lg text-xs font-medium text-cyan-300">Connected API</button>
             <button
               type="button"
               onClick={() => setActiveTab('checks')}
@@ -83,18 +84,18 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, network
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-slate-400">Mode:</span>
-              <span className="font-mono text-cyan-400 font-semibold">Fixture Offline</span>
+              <span className="font-mono text-cyan-400 font-semibold">{activeTab === 'api' ? 'API results' : 'Fixture Offline'}</span>
             </div>
 
-            <select
+            {activeTab !== 'api' && <select
               value={network}
               onChange={(e) => setNetwork(e.target.value as Network)}
               className="bg-slate-800 border border-slate-700 text-slate-200 rounded-lg text-xs px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono"
             >
               <option value="testnet">NEAR Testnet</option>
               <option value="sandbox">Local Sandbox</option>
-              <option value="mainnet">NEAR Mainnet</option>
-            </select>
+
+            </select>}
           </div>
         </div>
       </div>

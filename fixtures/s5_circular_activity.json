@@ -1,7 +1,7 @@
 {
   "id": "S5",
   "name": "Circular Activity Manipulation",
-  "description": "Manufactured circular flow within small connected 3-account group; circular volume discounted with CIRCULAR_ACTIVITY warning and risk score 65.",
+  "description": "Synthetic offline assessment fixture. Manufactured circular flow within small connected 3-account group; circular volume discounted with CIRCULAR_ACTIVITY warning and risk score 65.",
   "security_invariant": "Reciprocal wash trading in closed loops is detected and penalized; artificial transaction volume cannot manufacture legitimate reputation credit.",
   "network": "testnet",
   "proposed_action": {
@@ -10,7 +10,9 @@
     "amount_yocto": "50000000000000000000000"
   },
   "expected_decision": "warn",
-  "expected_reason_codes": ["CIRCULAR_ACTIVITY"],
+  "expected_reason_codes": [
+    "CIRCULAR_ACTIVITY"
+  ],
   "expected_signed": false,
   "expected_submitted": false,
   "expected_balance_delta_yocto": "0",
@@ -27,7 +29,11 @@
     "reputation_risk_points": 65,
     "raw_report_count": 1,
     "effective_report_weight": 1.0,
-    "ring_accounts": ["wash-trader.testnet", "ring-a.testnet", "ring-b.testnet"],
+    "ring_accounts": [
+      "wash-trader.testnet",
+      "ring-a.testnet",
+      "ring-b.testnet"
+    ],
     "cycle_path": [
       "wash-trader.testnet",
       "ring-a.testnet",
@@ -63,7 +69,7 @@
         "issued_at": 1792947600000,
         "expires_at": 1824483600000,
         "nonce": "nonce_rep_wash_01",
-        "signature": "ed25519:5M7t4bJ4XoQxVv4Q3JvX7uD7Yg6o8M3q6E5k9G1u7Z3x6w5m8P1q2N4y9T8r3S5HL9TyXQMqnAJNJZzA3kV8CA",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
         "dependence_group_id": null,
         "created_at": 1792947600000
       }
@@ -100,6 +106,7 @@
       "nonce": "nonce_s5_circle8",
       "policy_revision": 7,
       "blocklist_revision": 7
-    }
+    },
+    "independent_successful_counterparties": 0
   }
 }

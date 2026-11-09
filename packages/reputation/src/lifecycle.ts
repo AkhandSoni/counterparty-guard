@@ -135,12 +135,14 @@ export interface IReferenceVerifier {
 }
 
 export interface IReportLifecycleRepository {
-  getReportById(reportId: string): Promise<ReportRecord | null> | ReportRecord | null;
+  transaction?<T>(work: () => T): T;
+  getActiveBlocksByReport(reportId: string): { entry_id: string }[];
+  getReportById(reportId: string): ReportRecord | null;
   updateReportStatus(
     reportId: string,
     status: ReportStatus,
     dependenceGroupId?: string | null,
-  ): Promise<void> | void;
+  ): void;
 
   createVerificationLog(record: {
     report_id: string;
@@ -148,32 +150,32 @@ export interface IReportLifecycleRepository {
     matched_count: number;
     details: string;
     verified_at: number;
-  }): Promise<void> | void;
+  }): void;
 
-  createReview(record: ReviewRecord): Promise<void> | void;
-  getReviewsByReportId(reportId: string): Promise<ReviewRecord[]> | ReviewRecord[];
+  createReview(record: ReviewRecord): void;
+  getReviewsByReportId(reportId: string): ReviewRecord[];
 
-  createBlocklistEntry(entry: ActiveBlocklistEntry): Promise<void> | void;
+  createBlocklistEntry(entry: ActiveBlocklistEntry): void;
   getActiveBlocklistEntry?(
     network: string,
     accountId: string,
     codeHash?: string | null,
-  ): Promise<ActiveBlocklistEntry | null> | ActiveBlocklistEntry | null;
+  ): ActiveBlocklistEntry | null;
   revokeBlocklistEntry(
     entryId: string,
     params: { reviewer_id: string; reason: string; revoked_at: number },
-  ): Promise<number> | number;
+  ): number;
 
   appendBlocklistRevision(
     revision: Omit<LifecycleRevisionRecord, 'revision'>,
-  ): Promise<number> | number;
-  getLatestBlocklistRevision(): Promise<number> | number;
-  getBlocklistRevisions?(limit?: number): Promise<unknown[]> | unknown[];
+  ): number;
+  getLatestBlocklistRevision(): number;
+  getBlocklistRevisions?(limit?: number): unknown[];
 
   findReportsByAccused(
     network: string,
     accusedAccountId: string,
-  ): Promise<ReportRecord[]> | ReportRecord[];
+  ): ReportRecord[];
 }
 
 // ============================================================================
@@ -446,21 +448,25 @@ export class ReportLifecycleEngine {
    * references_verified | corroborated | submitted -> reviewed (or rejected)
    * Enforces Reviewer Authority Invariant and updates append-only blocklist revision.
    */
-  async review(
+  async review(reportId: string, request: ReviewReportRequest, reviewer: ReviewerContext, now = Date.now()): Promise<{ review: ReviewRecord; blocklistRevision: number; newStatus: ReportStatus }> {
+    const work = () => this.reviewNow(reportId, request, reviewer, now);
+    return this.repository.transaction ? this.repository.transaction(work) : work();
+  }
+  private reviewNow(
     reportId: string,
     request: ReviewReportRequest,
     reviewer: ReviewerContext,
     now = Date.now(),
-  ): Promise<{ review: ReviewRecord; blocklistRevision: number; newStatus: ReportStatus }> {
+  ): { review: ReviewRecord; blocklistRevision: number; newStatus: ReportStatus } {
     assertReviewerAuthority(reviewer);
 
-    const report = await this.repository.getReportById(reportId);
+    const report = this.repository.getReportById(reportId);
     if (!report) {
       throw new ReportNotFoundError(reportId);
     }
 
     if (now >= report.expires_at) {
-      await this.repository.updateReportStatus(report.report_id, 'expired');
+      this.repository.updateReportStatus(report.report_id, 'expired');
       throw new ReportExpiredError(reportId);
     }
 
@@ -472,8 +478,17 @@ export class ReportLifecycleEngine {
 
     let targetStatus: ReportStatus = 'reviewed';
     let blocklistEntryId: string | null = null;
-    let currentRevision = await this.repository.getLatestBlocklistRevision();
+    let currentRevision = this.repository.getLatestBlocklistRevision();
 
+    if (request.decision === 'active_block') {
+      if (request.scope !== 'account' && !report.contract_code_hash) throw new InvalidStateTransitionError('Code scope requires an exact code identity');
+      if (request.block_expires_at !== undefined && request.block_expires_at <= now) throw new InvalidStateTransitionError('Block expiry must be in the future');
+    }
+    if (['active_block', 'dismissed', 'rejected'].includes(request.decision)) {
+      for (const entry of this.repository.getActiveBlocksByReport(report.report_id)) {
+        currentRevision = this.repository.revokeBlocklistEntry(entry.entry_id, { reviewer_id: reviewer.reviewer_id, reason: request.reason, revoked_at: now });
+      }
+    }
     if (request.decision === 'active_block') {
       const entryId = crypto.randomUUID();
       const codeHash = request.scope !== 'account' ? report.contract_code_hash || null : null;
@@ -490,15 +505,15 @@ export class ReportLifecycleEngine {
         reason: request.reason,
         status: 'active',
         created_at: now,
-        expires_at: request.block_expires_at ?? null,
+        expires_at: request.block_expires_at ?? report.expires_at,
         revoked_at: null,
         revocation_reason: null,
         revocation_reviewer_id: null,
       };
 
-      await this.repository.createBlocklistEntry(blockEntry);
+      this.repository.createBlocklistEntry(blockEntry);
 
-      currentRevision = await this.repository.appendBlocklistRevision({
+      currentRevision = this.repository.appendBlocklistRevision({
         action: 'create',
         entry_id: entryId,
         network: report.network,
@@ -534,8 +549,8 @@ export class ReportLifecycleEngine {
       reviewed_at: now,
     };
 
-    await this.repository.createReview(reviewRecord);
-    await this.repository.updateReportStatus(report.report_id, targetStatus);
+    this.repository.createReview(reviewRecord);
+    this.repository.updateReportStatus(report.report_id, targetStatus);
 
     return {
       review: reviewRecord,
@@ -590,6 +605,9 @@ export class MemoryReportLifecycleRepository implements IReportLifecycleReposito
   public blocklist = new Map<string, ActiveBlocklistEntry>();
   public revisions: LifecycleRevisionRecord[] = [];
 
+  getActiveBlocksByReport(reportId: string): { entry_id: string }[] {
+    return [...this.blocklist.values()].filter(entry => entry.origin_report_id === reportId && entry.status === 'active');
+  }
   getReportById(reportId: string): ReportRecord | null {
     return this.reports.get(reportId) ?? null;
   }
@@ -642,7 +660,7 @@ export class MemoryReportLifecycleRepository implements IReportLifecycleReposito
         if (entry.target_type === 'account' && entry.account_id === accountId) {
           return entry;
         }
-        if (entry.target_type === 'code_hash' && codeHash && entry.code_hash === codeHash) {
+        if (entry.target_type === 'code_hash' && entry.account_id === accountId && codeHash && entry.code_hash === codeHash) {
           return entry;
         }
         if (

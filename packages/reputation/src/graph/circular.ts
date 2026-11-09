@@ -37,9 +37,9 @@ export interface CircularFlowDetectorOptions {
 function canonicalRotate<T>(arr: T[], keyFn: (item: T) => string): T[] {
   if (arr.length <= 1) return [...arr];
   let minIdx = 0;
-  let minVal = keyFn(arr[0]);
+  let minVal = keyFn(arr[0]!);
   for (let i = 1; i < arr.length; i++) {
-    const val = keyFn(arr[i]);
+    const val = keyFn(arr[i]!);
     if (val < minVal) {
       minVal = val;
       minIdx = i;
@@ -101,7 +101,7 @@ export function detectCircularFlow(options: CircularFlowDetectorOptions): Circul
           // Canonicalize cycle to deduplicate cyclic rotations
           const rotatedNodes = canonicalRotate(pathNodes, (n) => n);
           // Rotate edges to match the rotated nodes
-          const startIdx = pathNodes.indexOf(rotatedNodes[0]);
+          const startIdx = pathNodes.indexOf(rotatedNodes[0]!);
           const allEdges = [...pathEdges, edge];
           const rotatedEdges = [...allEdges.slice(startIdx), ...allEdges.slice(0, startIdx)];
 
@@ -127,7 +127,7 @@ export function detectCircularFlow(options: CircularFlowDetectorOptions): Circul
             }
 
             detectedCycles.push({
-              path: [...rotatedNodes, rotatedNodes[0]],
+              path: [...rotatedNodes, rotatedNodes[0]!],
               cycleLength: rotatedNodes.length,
               edges: rotatedEdges,
               volumeYocto: minVolume.toString(),

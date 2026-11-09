@@ -31,7 +31,7 @@ export const ScenarioDefinitionSchema = z.object({
   expected_signed: z.boolean(),
   expected_submitted: z.boolean(),
   expected_balance_delta_yocto: z.string().regex(/^\d+$/).default('0'),
-  initial_state: z.record(z.unknown()).default({}),
+  initial_state: z.record(z.string(), z.unknown()).default({}),
 });
 export type ScenarioDefinition = z.infer<typeof ScenarioDefinitionSchema>;
 
@@ -40,7 +40,9 @@ export const DemoExecutionLogSchema = z.object({
   scenario_id: ScenarioIdSchema,
   mode: z.enum(['deterministic', 'sandbox', 'testnet']),
   injected_prompt_hash: z.string(),
-  decision: DecisionSchema,
+  decision: DecisionSchema.or(z.literal('error')),
+  source_mode: z.literal('fixture').nullable().optional(),
+  execution_environment: z.literal('not-executed').optional(),
   reason_codes: z.array(z.string()),
   permit_hash: z.string().nullable(),
   signed: z.boolean(),

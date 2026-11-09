@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { DatabaseSync } from 'node:sqlite';
+import type { DatabaseSync } from './db.js';
 import type {
   ReportCategory,
   ReportRecord,
@@ -15,12 +15,22 @@ import type {
   FaucetExemptionRecord,
   GroupMemberRecord,
   ReporterRecord,
-  VerificationLogRecord,
 } from './types.js';
 
 export class ReportRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: DatabaseSync, private readonly clock: () => number = Date.now) {}
 
+  now(): number { return this.clock(); }
+  transaction<T>(work: () => T): T { return this.db.transaction(work)(); }
+  getBlockById(entryId: string): ActiveBlockRecord | null {
+    return this.db.prepare('SELECT * FROM active_blocklist WHERE entry_id=?').get(entryId) as ActiveBlockRecord | undefined ?? null;
+  }
+  getActiveBlocksByReport(reportId: string): ActiveBlockRecord[] {
+    return this.db.prepare('SELECT * FROM active_blocklist WHERE report_id=? AND is_active=1').all(reportId) as ActiveBlockRecord[];
+  }
+  getActiveBlocks(network: string, accountId: string, now: number): ActiveBlockRecord[] {
+    return this.db.prepare('SELECT * FROM active_blocklist WHERE network=? AND accused_account_id=? AND is_active=1 AND (expires_at IS NULL OR expires_at>?)').all(network, accountId, now) as ActiveBlockRecord[];
+  }
   // ===================== REPORTERS =====================
 
   upsertReporter(params: {
@@ -28,7 +38,7 @@ export class ReportRepository {
     public_key: string;
     network: 'testnet' | 'mainnet' | 'sandbox';
   }): ReporterRecord {
-    const now = Date.now();
+    const now = this.clock();
     const existing = this.getReporter(params.reporter_id);
     if (!existing) {
       const stmt = this.db.prepare(`
@@ -55,7 +65,7 @@ export class ReportRepository {
     network?: 'testnet' | 'mainnet' | 'sandbox';
     created_at?: number;
   }): void {
-    const now = reporter.created_at ?? Date.now();
+    const now = reporter.created_at ?? this.clock();
     const network = reporter.network ?? 'testnet';
     const stmt = this.db.prepare(`
       INSERT INTO reporters (reporter_id, public_key, network, reputation_score, total_reports, created_at, updated_at)
@@ -123,7 +133,7 @@ export class ReportRepository {
       .prepare(
         'UPDATE reporters SET total_reports = total_reports + 1, updated_at = ? WHERE reporter_id = ?',
       )
-      .run(Date.now(), report.reporter_id);
+      .run(this.clock(), report.reporter_id);
   }
 
   getReport(report_id: string): ReportRecord | null {
@@ -154,7 +164,7 @@ export class ReportRepository {
     status: ReportStatus,
     dependence_group_id?: string | null,
   ): void {
-    const now = Date.now();
+    const now = this.clock();
     if (dependence_group_id !== undefined) {
       this.db
         .prepare(
@@ -207,7 +217,7 @@ export class ReportRepository {
       params.report_id,
       params.reference_type,
       params.reference_value,
-      Date.now(),
+      this.clock(),
     );
     return evidence_id;
   }
@@ -235,7 +245,7 @@ export class ReportRepository {
       params.check_name,
       params.passed ? 1 : 0,
       params.details ?? null,
-      Date.now(),
+      this.clock(),
     );
   }
 
@@ -310,15 +320,15 @@ export class ReportRepository {
     accused_account_id: string,
     contract_code_hash?: string | null,
   ): ActiveBlockRecord | null {
-    const now = Date.now();
+    const now = this.clock();
     const query = `
       SELECT * FROM active_blocklist
       WHERE network = ? AND is_active = 1
         AND (expires_at IS NULL OR expires_at > ?)
         AND (
-          (accused_account_id = ? AND scope IN ('account', 'both'))
+          (accused_account_id = ? AND scope = 'account')
           OR
-          (contract_code_hash IS NOT NULL AND contract_code_hash = ? AND scope IN ('code_hash', 'both'))
+          (accused_account_id = ? AND contract_code_hash IS NOT NULL AND contract_code_hash = ? AND scope IN ('code_hash', 'both'))
         )
       ORDER BY created_at DESC
       LIMIT 1;
@@ -326,6 +336,7 @@ export class ReportRepository {
     const params: (string | number | null)[] = [
       network,
       now,
+      accused_account_id,
       accused_account_id,
       contract_code_hash ?? null,
     ];
@@ -339,9 +350,9 @@ export class ReportRepository {
     blocklist_revision: number;
   } {
     const entry_id = randomUUID();
-    const now = Date.now();
+    const now = this.clock();
 
-    this.db.exec('BEGIN TRANSACTION;');
+    this.db.exec('SAVEPOINT report_mutation;');
     try {
       // 1. Insert into active_blocklist
       this.db
@@ -384,10 +395,10 @@ export class ReportRepository {
         );
 
       const blocklist_revision = Number(res.lastInsertRowid);
-      this.db.exec('COMMIT;');
+      this.db.exec('RELEASE SAVEPOINT report_mutation;');
       return { entry_id, blocklist_revision };
     } catch (err) {
-      this.db.exec('ROLLBACK;');
+      this.db.exec('ROLLBACK TO SAVEPOINT report_mutation; RELEASE SAVEPOINT report_mutation;');
       throw err;
     }
   }
@@ -432,8 +443,8 @@ export class ReportRepository {
     entry_id: string,
     params: { reviewer_id: string; reason: string; revoked_at?: number },
   ): number {
-    const revoked_at = params.revoked_at ?? Date.now();
-    this.db.exec('BEGIN TRANSACTION;');
+    const revoked_at = params.revoked_at ?? this.clock();
+    this.db.exec('SAVEPOINT report_mutation;');
     try {
       const entry = this.db
         .prepare('SELECT * FROM active_blocklist WHERE entry_id = ?')
@@ -469,10 +480,10 @@ export class ReportRepository {
         );
 
       const revision = Number(res.lastInsertRowid);
-      this.db.exec('COMMIT;');
+      this.db.exec('RELEASE SAVEPOINT report_mutation;');
       return revision;
     } catch (err) {
-      this.db.exec('ROLLBACK;');
+      this.db.exec('ROLLBACK TO SAVEPOINT report_mutation; RELEASE SAVEPOINT report_mutation;');
       throw err;
     }
   }
@@ -574,7 +585,7 @@ export class ReportRepository {
       INSERT OR IGNORE INTO group_members (membership_id, group_id, account_id, role, hops_from_funder, observed_at)
       VALUES (?, ?, ?, ?, ?, ?)
     `);
-    stmt.run(randomUUID(), group_id, account_id, role, hops, Date.now());
+    stmt.run(randomUUID(), group_id, account_id, role, hops, this.clock());
   }
 
   getGroupMembers(group_id: string): GroupMemberRecord[] {

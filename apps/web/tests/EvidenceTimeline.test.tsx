@@ -2,7 +2,6 @@ import type React from 'react';
 import { renderToString } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import {
-  SCENARIO_RECEIVER_EVIDENCE,
   getReceiverEvidence,
   getScenarioEvidence,
 } from '../src/data/mockReceiverEvidence';

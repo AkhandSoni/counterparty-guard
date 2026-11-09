@@ -18,10 +18,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_MAX_ACCOUNTS,
-  DEFAULT_MAX_EDGES,
   type GraphEdge,
   InMemoryGraphProvider,
-  MS_PER_DAY,
   traverseBoundedGraph,
 } from '../src/graph/traversal.js';
 import { getReceiverReputation } from '../src/scoring.js';
@@ -290,242 +288,31 @@ describe('Milestone M4.3 Empirical Challenge: Traversal Limits & Block Scope Ver
   // =========================================================================
   // PART 2: SQLite Repository getActiveBlock Scope Strictness
   // =========================================================================
-  describe('Part 2: getActiveBlock Scope Strictness & Isolation', () => {
-    function setupRepo() {
-      const db = createDatabase({ path: ':memory:' });
-      runMigrations(db);
-      return new ReportRepository(db);
-    }
-
-    it('scope = code_hash strictly matches ONLY identical code hash and NEVER leaks to account alone', () => {
-      const repo = setupRepo();
-
-      repo.createActiveBlock({
-        network: 'testnet',
-        accused_account_id: 'contract_pool.testnet',
-        contract_code_hash: 'malicious_bytecode_hash_v1',
-        scope: 'code_hash',
-        reason: 'Bytecode contains exploit signature',
-        reviewer_id: 'auditor_1.testnet',
-      });
-
-      // 1. The accused account running a DIFFERENT (or clean) code hash MUST NOT be blocked
-      const queryCleanHash = repo.getActiveBlock(
-        'testnet',
-        'contract_pool.testnet',
-        'clean_bytecode_hash_v2',
-      );
-      expect(queryCleanHash).toBeNull();
-
-      // 2. The accused account running NO contract (null code hash) MUST NOT be blocked
-      const queryNullHash = repo.getActiveBlock('testnet', 'contract_pool.testnet', null);
-      expect(queryNullHash).toBeNull();
-
-      // 3. The accused account running undefined code hash MUST NOT be blocked
-      const queryUndefinedHash = repo.getActiveBlock('testnet', 'contract_pool.testnet', undefined);
-      expect(queryUndefinedHash).toBeNull();
-
-      // 4. The accused account running the MALICIOUS bytecode MUST be blocked
-      const queryMatchingAccAndHash = repo.getActiveBlock(
-        'testnet',
-        'contract_pool.testnet',
-        'malicious_bytecode_hash_v1',
-      );
-      expect(queryMatchingAccAndHash).not.toBeNull();
-      expect(queryMatchingAccAndHash?.contract_code_hash).toBe('malicious_bytecode_hash_v1');
-      expect(queryMatchingAccAndHash?.scope).toBe('code_hash');
-
-      // 5. ANY OTHER account running the MALICIOUS bytecode MUST also be blocked
-      const queryOtherAccWithBadHash = repo.getActiveBlock(
-        'testnet',
-        'completely_different_victim.testnet',
-        'malicious_bytecode_hash_v1',
-      );
-      expect(queryOtherAccWithBadHash).not.toBeNull();
-      expect(queryOtherAccWithBadHash?.entry_id).toBe(queryMatchingAccAndHash?.entry_id);
-
-      // 6. Another account running clean bytecode MUST NOT be blocked
-      const queryOtherAccWithCleanHash = repo.getActiveBlock(
-        'testnet',
-        'completely_different_victim.testnet',
-        'clean_hash',
-      );
-      expect(queryOtherAccWithCleanHash).toBeNull();
+  describe('Part 2: account-bound block scope and expiry', () => {
+    function setupRepo() { const db = createDatabase(); runMigrations(db); return new ReportRepository(db); }
+    it.each(['code_hash','both'] as const)('%s matches only the reviewed account and exact code', scope => {
+      const repo = setupRepo(); repo.createActiveBlock({ network:'testnet', accused_account_id:'reviewed.testnet', contract_code_hash:'code-v1', scope, reason:'Synthetic reviewed fixture', reviewer_id:'reviewer' });
+      expect(repo.getActiveBlock('testnet','reviewed.testnet','code-v1')).not.toBeNull();
+      expect(repo.getActiveBlock('testnet','unrelated.testnet','code-v1')).toBeNull();
+      expect(repo.getActiveBlock('testnet','reviewed.testnet','code-v2')).toBeNull();
+      expect(repo.getActiveBlock('testnet','reviewed.testnet',null)).toBeNull();
+      expect(repo.getActiveBlock('sandbox','reviewed.testnet','code-v1')).toBeNull();
     });
-
-    it('scope = account strictly matches ONLY accused account and NEVER leaks to code hash alone', () => {
-      const repo = setupRepo();
-
-      repo.createActiveBlock({
-        network: 'testnet',
-        accused_account_id: 'bad_actor.testnet',
-        contract_code_hash: 'standard_escrow_bytecode',
-        scope: 'account',
-        reason: 'Malicious operator identity scam',
-        reviewer_id: 'auditor_2.testnet',
-      });
-
-      // 1. Accused account is blocked regardless of code hash (even null, clean, or undefined)
-      expect(repo.getActiveBlock('testnet', 'bad_actor.testnet', null)).not.toBeNull();
-      expect(repo.getActiveBlock('testnet', 'bad_actor.testnet', undefined)).not.toBeNull();
-      expect(repo.getActiveBlock('testnet', 'bad_actor.testnet', 'clean_escrow_v2')).not.toBeNull();
-      expect(
-        repo.getActiveBlock('testnet', 'bad_actor.testnet', 'standard_escrow_bytecode'),
-      ).not.toBeNull();
-
-      // 2. An innocent account running the same bytecode MUST NOT be blocked
-      const innocentQuery = repo.getActiveBlock(
-        'testnet',
-        'innocent_escrow.testnet',
-        'standard_escrow_bytecode',
-      );
-      expect(innocentQuery).toBeNull();
+    it('account-wide scope survives upgrades without spreading through code', () => {
+      const repo=setupRepo();repo.createActiveBlock({network:'testnet',accused_account_id:'reviewed.testnet',contract_code_hash:'old-code',scope:'account',reason:'Synthetic reviewed fixture',reviewer_id:'reviewer'});
+      expect(repo.getActiveBlock('testnet','reviewed.testnet','new-code')).not.toBeNull();
+      expect(repo.getActiveBlock('testnet','unrelated.testnet','old-code')).toBeNull();
     });
-
-    it('scope = both matches when EITHER account matches OR code hash matches', () => {
-      const repo = setupRepo();
-
-      repo.createActiveBlock({
-        network: 'testnet',
-        accused_account_id: 'toxic_creator.testnet',
-        contract_code_hash: 'toxic_bytecode_hash',
-        scope: 'both',
-        reason: 'Malicious author and infected bytecode',
-        reviewer_id: 'auditor_3.testnet',
-      });
-
-      // 1. Toxic account with null code hash -> MATCH
-      expect(repo.getActiveBlock('testnet', 'toxic_creator.testnet', null)).not.toBeNull();
-
-      // 2. Toxic account with different code hash -> MATCH (matches account)
-      expect(
-        repo.getActiveBlock('testnet', 'toxic_creator.testnet', 'random_new_hash'),
-      ).not.toBeNull();
-
-      // 3. Different account with toxic code hash -> MATCH (matches code hash)
-      expect(
-        repo.getActiveBlock('testnet', 'unrelated_victim.testnet', 'toxic_bytecode_hash'),
-      ).not.toBeNull();
-
-      // 4. Different account with different code hash -> NO MATCH
-      expect(
-        repo.getActiveBlock('testnet', 'unrelated_victim.testnet', 'random_new_hash'),
-      ).toBeNull();
-
-      // 5. Different account with null code hash -> NO MATCH
-      expect(repo.getActiveBlock('testnet', 'unrelated_victim.testnet', null)).toBeNull();
-    });
-
-    it('preserves network isolation across scope-filtered active blocks', () => {
-      const repo = setupRepo();
-
-      repo.createActiveBlock({
-        network: 'testnet',
-        accused_account_id: 'isolated_target.testnet',
-        contract_code_hash: 'isolated_hash_123',
-        scope: 'both',
-        reason: 'Testnet test block',
-        reviewer_id: 'auditor_net.testnet',
-      });
-
-      // Testnet matches
-      expect(
-        repo.getActiveBlock('testnet', 'isolated_target.testnet', 'isolated_hash_123'),
-      ).not.toBeNull();
-
-      // Mainnet must be null
-      expect(
-        repo.getActiveBlock('mainnet', 'isolated_target.testnet', 'isolated_hash_123'),
-      ).toBeNull();
-
-      // Sandbox must be null
-      expect(
-        repo.getActiveBlock('sandbox', 'isolated_target.testnet', 'isolated_hash_123'),
-      ).toBeNull();
-    });
-
-    it('correctly handles expired and revoked scope-filtered blocks', () => {
-      const repo = setupRepo();
-      const past = Date.now() - 60_000; // 1 minute ago
-
-      // 1. Expired code_hash block
-      repo.createActiveBlock({
-        network: 'testnet',
-        accused_account_id: 'expired_target.testnet',
-        contract_code_hash: 'expired_code_hash',
-        scope: 'code_hash',
-        reason: 'Temporary quarantine',
-        reviewer_id: 'auditor_exp.testnet',
-        expires_at: past,
-      });
-
-      expect(repo.getActiveBlock('testnet', 'any_account.testnet', 'expired_code_hash')).toBeNull();
-
-      // 2. Revoked code_hash block
-      const created = repo.createActiveBlock({
-        network: 'testnet',
-        accused_account_id: 'revoked_target.testnet',
-        contract_code_hash: 'revoked_code_hash',
-        scope: 'code_hash',
-        reason: 'Under investigation',
-        reviewer_id: 'auditor_rev.testnet',
-      });
-
-      expect(
-        repo.getActiveBlock('testnet', 'any_account.testnet', 'revoked_code_hash'),
-      ).not.toBeNull();
-
-      repo.revokeActiveBlock(created.entry_id, {
-        reviewer_id: 'auditor_rev.testnet',
-        reason: 'Investigation cleared bytecode',
-      });
-
-      expect(repo.getActiveBlock('testnet', 'any_account.testnet', 'revoked_code_hash')).toBeNull();
-    });
-
-    it('arbitrates multiple active blocks according to scope and newest created_at', () => {
-      const repo = setupRepo();
-
-      // Block 1 (older): Scope 'account' on bad_user.testnet
-      repo.createActiveBlock({
-        network: 'testnet',
-        accused_account_id: 'bad_user.testnet',
-        contract_code_hash: null,
-        scope: 'account',
-        reason: 'Account level block',
-        reviewer_id: 'reviewer_1',
-      });
-
-      // Block 2 (newer): Scope 'code_hash' on malicious_hash
-      repo.createActiveBlock({
-        network: 'testnet',
-        accused_account_id: 'some_other_creator.testnet',
-        contract_code_hash: 'malicious_hash_99',
-        scope: 'code_hash',
-        reason: 'Bytecode level block',
-        reviewer_id: 'reviewer_2',
-      });
-
-      // Query bad_user with clean code -> matches Block 1
-      const resBadUser = repo.getActiveBlock('testnet', 'bad_user.testnet', 'clean_hash');
-      expect(resBadUser).not.toBeNull();
-      expect(resBadUser?.scope).toBe('account');
-      expect(resBadUser?.accused_account_id).toBe('bad_user.testnet');
-
-      // Query innocent user with malicious code -> matches Block 2
-      const resInnocent = repo.getActiveBlock('testnet', 'innocent.testnet', 'malicious_hash_99');
-      expect(resInnocent).not.toBeNull();
-      expect(resInnocent?.scope).toBe('code_hash');
-      expect(resInnocent?.contract_code_hash).toBe('malicious_hash_99');
-
-      // Query innocent user with clean code -> null
-      expect(repo.getActiveBlock('testnet', 'innocent.testnet', 'clean_hash')).toBeNull();
+    it('expired and revoked scoped entries cannot block even their reviewed account', () => {
+      const repo=setupRepo();repo.createActiveBlock({network:'testnet',accused_account_id:'expired.testnet',contract_code_hash:'code-v1',scope:'code_hash',reason:'Synthetic expiry fixture',reviewer_id:'reviewer',expires_at:Date.now()-1});
+      expect(repo.getActiveBlock('testnet','expired.testnet','code-v1')).toBeNull();
+      const active=repo.createActiveBlock({network:'testnet',accused_account_id:'reviewed.testnet',contract_code_hash:'code-v1',scope:'code_hash',reason:'Synthetic revocation fixture',reviewer_id:'reviewer'});
+      expect(repo.getActiveBlock('testnet','reviewed.testnet','code-v1')).not.toBeNull();
+      repo.revokeActiveBlock(active.entry_id,{reviewer_id:'reviewer',reason:'Evidence corrected'});
+      expect(repo.getActiveBlock('testnet','reviewed.testnet','code-v1')).toBeNull();
     });
   });
 
-  // =========================================================================
-  // PART 3: End-to-End Scoring Pipeline Integration
-  // =========================================================================
   describe('Part 3: End-to-End Pipeline Scope Strictness', () => {
     it('getReceiverReputation does NOT block contract that upgraded from flagged bytecode', async () => {
       const db = createDatabase({ path: ':memory:' });

@@ -75,11 +75,11 @@ describe('Web UI Component Unit Tests (apps/web)', () => {
       expect(html).toContain('Receiver has 6+ months active history');
     });
 
-    it('renders permit card with copyable permit digest', () => {
+    it('does not render an executable permit in offline previews', () => {
       const html = renderToString(<CheckActionView />);
-      expect(html).toContain('Permit Digest');
-      expect(html).toContain('Nonce:');
-      expect(html).toContain('Revision:');
+      expect(html).not.toContain('Permit Digest');
+      expect(html).not.toContain('Nonce:');
+      expect(html).not.toContain('Revision:');
     });
   });
 

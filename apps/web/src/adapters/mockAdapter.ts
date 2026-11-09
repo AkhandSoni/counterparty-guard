@@ -1,16 +1,4 @@
-import {
-  type Action,
-  type CheckRequest,
-  CheckRequestSchema,
-  type CheckResponse,
-  CheckResponseSchema,
-  type Decision,
-  type ExecutionPermit,
-  ExecutionPermitSchema,
-  type ReasonCode,
-  type ScenarioId,
-  ScenarioIdSchema,
-} from '@counterparty-guard/shared';
+import { type Action, type CheckRequest, CheckRequestSchema, type CheckResponse, CheckResponseSchema, type Decision, type ExecutionPermit, type ReasonCode, type ScenarioId, ScenarioIdSchema } from '@counterparty-guard/shared/demo';
 
 export interface ActionParams {
   vaultAccountId: string;
@@ -205,39 +193,8 @@ export function toCanonicalCheckRequest(params: ActionParams, requestId?: string
 /**
  * Generates a mock ExecutionPermit strictly conforming to ExecutionPermitSchema.
  */
-function createMockExecutionPermit(
-  rawPermitHash: string,
-  verdict: 'allow' | 'warn',
-  nonce: string,
-  nowMs: number,
-): ExecutionPermit {
-  const canonicalHash = normalizePermitHash(rawPermitHash);
-  // Deterministic 87-character base58 signature satisfying /^ed25519:[1-9A-HJ-NP-Za-km-z]{86,88}$/
-  const dummySignature =
-    'ed25519:HL9TyXQMqnAJNJZzA3kV8CA9ZFHtQsYfpJ6rq9b2Kt7sogU7zCp3iuwBisoAnerAtwZPqD1Uy79v1F6L3u6LP9W';
-
-  let encodedBase64 = '';
-  try {
-    const payloadStr = JSON.stringify({ hash: canonicalHash, verdict, nonce });
-    if (typeof btoa !== 'undefined') {
-      encodedBase64 = btoa(payloadStr);
-    } else {
-      encodedBase64 = Buffer.from(payloadStr, 'utf-8').toString('base64');
-    }
-  } catch {
-    encodedBase64 = 'eyJtb2NrIjp0cnVlfQ==';
-  }
-
-  const permit: ExecutionPermit = {
-    permit_hash: canonicalHash,
-    encoded_permit_base64: encodedBase64,
-    signature: dummySignature,
-    verdict,
-    nonce,
-    issued_at: nowMs,
-    expires_at: nowMs + 15 * 60 * 1000,
-  };
-  return ExecutionPermitSchema.parse(permit);
+function createMockExecutionPermit(_rawPermitHash: string, _verdict: 'allow' | 'warn', _nonce: string, _nowMs: number): ExecutionPermit | null {
+  return null; // Offline previews are not signed payment authorizations.
 }
 
 /**

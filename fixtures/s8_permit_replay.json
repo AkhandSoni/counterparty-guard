@@ -1,7 +1,7 @@
 {
   "id": "S8",
   "name": "Permit Replay / Mutation",
-  "description": "Mutated permit parameters or replayed nonce rejected on-chain by vault contract; value transfer prevented.",
+  "description": "Synthetic offline assessment fixture. Mutated permit parameters or replayed nonce rejected on-chain by vault contract; value transfer prevented.",
   "security_invariant": "Permits are single-use, non-reusable cryptographic commitments; any parameter tampering (e.g. amount alteration or replayed nonce) is rejected on-chain by the vault contract.",
   "network": "testnet",
   "proposed_action": {
@@ -11,8 +11,8 @@
   },
   "expected_decision": "vault_rejection",
   "expected_reason_codes": [],
-  "expected_signed": true,
-  "expected_submitted": true,
+  "expected_signed": false,
+  "expected_submitted": false,
   "expected_balance_delta_yocto": "0",
   "initial_state": {
     "receiver_id": "merchant.testnet",
@@ -35,6 +35,7 @@
       "window_days": 7
     },
     "reports": [],
-    "canonical_permit": null
+    "canonical_permit": null,
+    "independent_successful_counterparties": 0
   }
 }

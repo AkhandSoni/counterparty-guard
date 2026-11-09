@@ -37,3 +37,43 @@ Impact: evidence persistence precedes permit release. Treat uncertain executions
 | B/C review accounts and repository protections | All | Before parallel feature work | Verified handles, available rules, real required checks |
 
 For subsequent entries include context, decision, owner/reviewer, alternatives relevant to the tradeoff, interface or migration impact, validation evidence, and superseded decision IDs.
+
+## D005 — Person A implementation and public repository (8 November 2026)
+
+Accepted at the user's request: implement A-owned backend and make the repository public. B/C deliver their own PRs; their contracts, guard SDK, report routes/migrations, reputation package, dashboard, fixtures and demo runner are untouched. This supersedes D001's planning-only scope and D003's initial private visibility. The equal human-effort estimates in PLAN.md remain planning estimates, not measured implementation time.
+
+Impact: source-running TypeScript workspace with exact Node26.7.0/pnpm11.25.0 pins, Fastify5.12.8, Zod4.6.7, better-sqlite3 13.0.3, TypeScript5.9.3, Vitest5.1.0 and ESLint10.14.0. Tested compatibility is established by install/native SQLite smoke, lint/typecheck and actual automated output. CI pins third-party actions by verified release commit SHA. No Rust dependencies are added by A.
+
+## D006 — Safe partial product composition
+
+Accepted: the standalone server is loopback, sandbox and synthetic-fixture only. Live receiver adapters can read testnet, but live permit issuance requires injected verified B policy/finality and C reputation adapters. There is no fallback empty live report state or assumed current vault policy. E2E/attack/demo entry points fail explicitly until the real B/C runners exist.
+
+Impact: A tests and HTTP smoke exercise actual API/SQLite/Ed25519 behavior, not on-chain enforcement. Rust vector equality, owner approvals, scoped key, pending-spend checks and S1–S10 remain cross-owner gates. B/C browser consumers use the pure `@counterparty-guard/shared/browser` export; Node signing never enters a browser bundle.
+
+## D007 — Evidence, retries and integration semantics
+
+Accepted: canonical bounded JSON snapshots bind retained inputs to signed authorization. Mandatory account/code facts use the same concrete block with underlying freshness. Idempotency fingerprints bind authenticated identity/request, action and environment; claims persist their nonce and enforce transactional owner/invalidation checks. Authority changes during awaits cannot knowingly release the old result. Independent activity credit in live mode comes only from C's justified optional 0..15 result; raw indexed counts earn none.
+
+Impact: fresh fetch timestamps or coverage-window/block advancement alone do not invalidate unchanged facts. Material risk/policy/code changes do; known in-flight/consumed executions cannot revalidate as reusable. Only trusted B adapters promote exact finalized operation evidence into successful history. Public golden vectors are ready for B review; no B/C owner review is fabricated.
+
+## D008 — Finalized code baseline and execution chronology (9 November 2026)
+
+Context: PR #1 review found that a known code-free receiver was indistinguishable from absent history, and late reconciliation could overwrite a newer code baseline using polling time.
+
+Decision: Person A uses finalized-success presence to distinguish a known `null` code identity, and orders successful code baselines by verified execution block height with exact u64 precision. Conflicting identities in the newest block force a warning rather than inventing within-block order. A later unambiguous finalized success can establish the next baseline. Completion compares finalized history transactionally after all signing/source awaits; a changed snapshot stops issuance until a same-ID retry reassesses it. This preserves code-change warnings despite activity/history credit and concurrent reconciliation.
+
+Impact: append `core-002` without modifying applied SQL. Backfill the execution height from the receipt that established the terminal outcome; retain observation timestamps, existing evidence snapshots and signed permit bytes. Missing legacy execution evidence yields unavailable history and no new permit. `FinalizedAgentHistory` adds optional `code_identity_ambiguous`; the execution read response adds nullable `finalized_block_height`. B's existing event field must represent the actual operation execution block. B/C owner review remains an integration gate; it is not claimed by this fix.
+
+Validation: scoring and API regressions cover first deployment, code removal, unchanged code-free receivers, delayed older contract receipts, u64 boundaries, duplicate receipts, same-block conflicts, migration/restart, and history changes during signing. Exact final checks are recorded in the Person A handoff. Polling-time ordering was rejected because it changes with adapter arrival order; a receipt-ID tie-break was rejected because it cannot prove chain order. This clarifies D007's trusted finality/history semantics.
+
+## D009 — Integrate C through A’s service and preserve authorization protocol (9 November 2026)
+
+Context: C’s PR began before A landed and introduced a parallel API, payment schemas, toolchain and SQLite driver. User authorized integration, security fixes and merge.
+
+Decision: preserve A’s pinned Zod/Fastify/SQLite/TypeScript stack, Borsh permit bytes, browser-safe schema exports, credential separation and immutable core migrations. Add C report schemas/signing separately; isolate offline display formats under `shared/demo`. C’s report plugin uses the core database/auth/invalidation boundaries, and a reputation-provider adapter feeds A’s deterministic scorer. Production has one API and one ordered checksum migration manifest. Standalone report-only service assembly is retained solely under test-support.
+
+Security: unconfigured review credentials fail closed; identity comes from configured credentials, never headers. Report review writes block/revision/audit/status atomically. Corrective rejection/dismissal revokes that report’s blocks and increments revisions. Code scope binds account and code together. Reused evidence is grouped across identities; shared funding requires a second relationship such as inter-reporter transfers or the same signing key. Funding exemptions cannot lower independent risk or grant trust. Live independent-activity credit remains zero until a justified inference is implemented.
+
+Demo: use actual fixture assessments and ephemeral service signatures, with no chain signature/submission. Missing B enforcement returns explicit unavailable gates. Offline UI formats cannot issue permits; the default view connects to the actual API with credentials held in memory. No live deployment/funding is performed.
+
+Impact: preserve upstream contributor commits with a merge from main. Append four report migrations; existing core SQL remains immutable. Consumers use canonical payment schemas at the shared root/browser exports; display-only examples import shared/demo. Old mock-heavy assertions are corrected to verify the documented invariants. B’s Rust/vector/owner/key/budget/receipt review remains pending. Actual validation and limits are retained in the C integration handoff.

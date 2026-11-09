@@ -1,4 +1,4 @@
-import type { ScenarioId } from '@counterparty-guard/shared';
+import type { ScenarioId } from '@counterparty-guard/shared/demo';
 import type React from 'react';
 import { useState } from 'react';
 import { type ActionParams, formatDisplayPermitHash, mockAdapter } from '../adapters/mockAdapter';

@@ -1,7 +1,7 @@
 {
   "id": "S1",
   "name": "Legitimate Established Receiver",
-  "description": "Established legitimate receiver with 182-day history, clean graph traversal, independent funding lineage, producing immediate allow and finalized transfer.",
+  "description": "Synthetic offline assessment fixture. Established legitimate receiver with 182-day history, clean graph traversal, independent funding lineage, producing an assessment only.",
   "security_invariant": "Autonomous AI agent execution is permitted only when counterparty exhibits established independent history with zero adversarial signals; valid execution permit issued and finalized on-chain.",
   "network": "testnet",
   "proposed_action": {
@@ -11,9 +11,9 @@
   },
   "expected_decision": "allow",
   "expected_reason_codes": [],
-  "expected_signed": true,
-  "expected_submitted": true,
-  "expected_balance_delta_yocto": "50000000000000000000000",
+  "expected_signed": false,
+  "expected_submitted": false,
+  "expected_balance_delta_yocto": "0",
   "initial_state": {
     "receiver_id": "merchant.testnet",
     "account_age_days": 182,
@@ -58,6 +58,7 @@
       "nonce": "nonce_s1_78a9c0",
       "policy_revision": 7,
       "blocklist_revision": 7
-    }
+    },
+    "independent_successful_counterparties": 15
   }
 }

@@ -6,3 +6,4 @@ export * from './graph/faucet.js';
 export * from './graph/clustering.js';
 export * from './graph/circular.js';
 export * from './scoring.js';
+export * from './provider.js';

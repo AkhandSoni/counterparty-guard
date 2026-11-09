@@ -97,7 +97,7 @@ describe('Report Lifecycle State Machine & Reviewer Authority (lifecycle.test.ts
       repo.reports.set(report.report_id, report);
 
       const mockVerifier: IReferenceVerifier = {
-        async verifyTransaction(network, txHash) {
+        async verifyTransaction(_network, _txHash) {
           return {
             exists: true,
             receiverId: 'drainer-target.testnet',
@@ -106,7 +106,7 @@ describe('Report Lifecycle State Machine & Reviewer Authority (lifecycle.test.ts
             timestamp: now - 50_000,
           };
         },
-        async getAccountCodeHash(network, accountId) {
+        async getAccountCodeHash(_network, _accountId) {
           return 'abc123codehash';
         },
       };
@@ -126,7 +126,7 @@ describe('Report Lifecycle State Machine & Reviewer Authority (lifecycle.test.ts
       repo.reports.set(report.report_id, report);
 
       const mockVerifier: IReferenceVerifier = {
-        async verifyTransaction(network, txHash) {
+        async verifyTransaction(_network, _txHash) {
           return {
             exists: true,
             receiverId: 'unrelated.testnet', // mismatch
@@ -146,7 +146,7 @@ describe('Report Lifecycle State Machine & Reviewer Authority (lifecycle.test.ts
       repo.reports.set(report.report_id, report);
 
       const mockVerifier: IReferenceVerifier = {
-        async verifyTransaction(network, txHash) {
+        async verifyTransaction(_network, _txHash) {
           return { exists: false };
         },
       };
@@ -275,7 +275,7 @@ describe('Report Lifecycle State Machine & Reviewer Authority (lifecycle.test.ts
 
       const reviewReq: ReviewReportRequest = {
         decision: 'active_block',
-        scope: 'both',
+        scope: 'account',
         reason: 'Malicious drainer verified through human forensic review.',
         block_expires_at: now + 86400_000, // 24 hours
       };
@@ -404,7 +404,7 @@ describe('Report Lifecycle State Machine & Reviewer Authority (lifecycle.test.ts
     it('executes full review and blocklist lifecycle on real SQLite database', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const sqlRepo = new ReportRepository(db);
+      const sqlRepo = new ReportRepository(db, () => now);
 
       // 1. Insert report
       const rep = createSampleReport();
@@ -431,7 +431,7 @@ describe('Report Lifecycle State Machine & Reviewer Authority (lifecycle.test.ts
         rep.report_id,
         {
           decision: 'active_block',
-          scope: 'both',
+          scope: 'account',
           reason: 'Reviewed in SQLite integration test',
         },
         validReviewer,
@@ -463,7 +463,7 @@ describe('Report Lifecycle State Machine & Reviewer Authority (lifecycle.test.ts
     it('engine.revokeBlock executed against real SQLite ReportRepository succeeds, updates is_active = 0, and increments blocklist revision monotonically without SQLite constraint errors', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const sqlRepo = new ReportRepository(db);
+      const sqlRepo = new ReportRepository(db, () => now);
       const sqlEngine = new ReportLifecycleEngine(sqlRepo);
 
       const rep = createSampleReport({ accused_account_id: 'sqlite-revoke-target.testnet' });

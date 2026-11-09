@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import 'node:crypto';
 import {
   type ReportSignablePayload,
   formatSignature,
@@ -155,7 +155,7 @@ describe('Adversarial Boundary & Stress Testing (intake.ts & storage)', () => {
     it('enforces duplicate nonce rejection in real SQLite ReportRepository and maps constraint to 409', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
 
       const kp = generateKeyPair();
       const fixedNonce = 'sqlite-fixed-nonce-999';
@@ -182,7 +182,7 @@ describe('Adversarial Boundary & Stress Testing (intake.ts & storage)', () => {
     it('handles concurrent simultaneous duplicate submissions in SQLite gracefully (only 1 succeeds, others 409)', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
 
       const kp = generateKeyPair();
       const concurrentNonce = 'concurrent-nonce-race-001';
@@ -789,7 +789,7 @@ describe('Adversarial Boundary & Stress Testing (intake.ts & storage)', () => {
     it('enforces key immutability under real SQLite ReportRepository', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
 
       const kp1 = generateKeyPair();
       const kp2 = generateKeyPair();
@@ -877,7 +877,7 @@ describe('Adversarial Boundary & Stress Testing (intake.ts & storage)', () => {
     it('enforces SQLite CHECK constraint chk_report_expiry (expires_at > issued_at)', () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
 
       repo.registerReporter({
         reporter_id: 'reporter-check.testnet',
@@ -904,7 +904,7 @@ describe('Adversarial Boundary & Stress Testing (intake.ts & storage)', () => {
     it('strictly maintains monotonic revision numbers on active block creation and revocation', () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
 
       expect(repo.getLatestBlocklistRevision()).toBe(0);
 
@@ -945,7 +945,7 @@ describe('Adversarial Boundary & Stress Testing (intake.ts & storage)', () => {
     it('resists SQL injection payloads in account IDs, descriptions, and nonces', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
 
       const kp = generateKeyPair();
       const sqliPayloads = [
@@ -978,7 +978,7 @@ describe('Adversarial Boundary & Stress Testing (intake.ts & storage)', () => {
     it('safely handles unicode, special characters, and emojis in report contents', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const repo = new ReportRepository(db);
+      const repo = new ReportRepository(db, () => now);
 
       const kp = generateKeyPair();
       const unicodeDesc = '🚨 CRITICAL EXPLOIT DETECTED: 0xDEADBEEF 💀 詐欺 ⚠️';

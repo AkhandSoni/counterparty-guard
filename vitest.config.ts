@@ -1,36 +1,13 @@
-import path from 'path';
 import { defineConfig } from 'vitest/config';
-
-export default defineConfig({
-  esbuild: {
-    jsx: 'automatic'
-  },
-  test: {
-    globals: true,
-    environment: 'node',
-    include: [
-      'packages/**/*.test.ts',
-      'apps/**/*.test.{ts,tsx}',
-      'tests/**/*.test.{ts,tsx}',
-      'fixtures/**/*.test.{ts,tsx}',
-      'scripts/**/*.test.{ts,tsx}'
-    ],
-    exclude: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/dist-ts/**',
-      '**/.agents/**',
-      '**/counterparty-guard-plan/**',
-      '**/contracts/**'
-    ],
-    passWithNoTests: true
-  },
-  resolve: {
-    alias: {
-      '@counterparty-guard/shared': path.resolve(__dirname, './packages/shared/src/index.ts'),
-      '@counterparty-guard/reputation': path.resolve(__dirname, './packages/reputation/src/index.ts'),
-      '@counterparty-guard/fixtures': path.resolve(__dirname, './fixtures/index.ts'),
-      '@': path.resolve(__dirname, './apps/web/src')
-    }
-  }
-});
+import { fileURLToPath } from 'node:url';
+export const aliases = {
+ '@':fileURLToPath(new URL('./apps/web/src',import.meta.url)),
+ '@counterparty-guard/shared/browser':fileURLToPath(new URL('./packages/shared/src/browser.ts',import.meta.url)),
+ '@counterparty-guard/shared/demo':fileURLToPath(new URL('./packages/shared/src/demo.ts',import.meta.url)),
+ '@counterparty-guard/shared':fileURLToPath(new URL('./packages/shared/src/index.ts',import.meta.url)),
+ '@counterparty-guard/providers':fileURLToPath(new URL('./packages/providers/src/index.ts',import.meta.url)),
+ '@counterparty-guard/scoring':fileURLToPath(new URL('./packages/scoring/src/index.ts',import.meta.url)),
+ '@counterparty-guard/reputation':fileURLToPath(new URL('./packages/reputation/src/index.ts',import.meta.url)),
+ '@counterparty-guard/fixtures':fileURLToPath(new URL('./fixtures/index.ts',import.meta.url)),
+};
+export default defineConfig({resolve:{alias:aliases},esbuild:{jsx:'automatic'},test:{include:['packages/**/*.test.ts','apps/**/*.test.{ts,tsx}','fixtures/**/*.test.ts','scripts/demo/**/*.test.ts','tests/regression/**/*.test.ts'],exclude:['**/node_modules/**','**/dist/**','**/dist-ts/**'],testTimeout:15000}});

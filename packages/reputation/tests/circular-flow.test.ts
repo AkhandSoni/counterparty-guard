@@ -4,7 +4,6 @@ import type {
   AccountAdjacency,
   AccountNode,
   BoundedSubgraph,
-  GraphEdge,
 } from '../src/graph/traversal.js';
 
 describe('Milestone M4: Circular Flow Detection (circular.ts)', () => {

@@ -77,8 +77,8 @@ export async function getReceiverReputation(
       circularActivityScore: 0,
       dependenceGroups: [],
       graphCoverage: {
-        accountsVisited: 8,
-        edgesTraversed: 14,
+        accountsVisited: 0,
+        edgesTraversed: 0,
         truncated: false,
         windowDays: 7,
       },
@@ -92,7 +92,7 @@ export async function getReceiverReputation(
   // 2. Stage 2: Report Aggregation & Status Filtering
   const allReports = repository ? repository.getReportsByAccused(network, normalizedAccountId) : [];
 
-  const validReports = allReports.filter((r) => r.expires_at > now);
+  const validReports = allReports.filter((r) => r.expires_at > now && ['submitted', 'references_verified', 'corroborated'].includes(r.status));
   const rawReportCount = validReports.length;
   const unresolvedReportsCount = validReports.filter((r) =>
     ['submitted', 'references_verified', 'corroborated'].includes(r.status),
@@ -133,7 +133,7 @@ export async function getReceiverReputation(
   let riskPoints = 40; // baseline uncertainty for unclassified account
 
   const codeChanged = Boolean(
-    priorApprovedCodeHash && contractCodeHash && priorApprovedCodeHash !== contractCodeHash,
+    priorApprovedCodeHash !== undefined && priorApprovedCodeHash !== contractCodeHash,
   );
 
   if (codeChanged) {
@@ -149,13 +149,13 @@ export async function getReceiverReputation(
   if (clusteringResult.sybilDiscountApplied) {
     reasonCodes.push('DEPENDENT_REPORTS');
     if (!circularFlow.circularActivityDetected && !codeChanged) {
-      riskPoints = 20; // Scenario S4: capped at 1.0 weight, no hard block
+      // Discount only the report contribution; it cannot award positive trust.
     }
   }
 
   if (clusteringResult.hasFaucetExemptions && !clusteringResult.sybilDiscountApplied) {
     reasonCodes.push('COMMON_FAUCET_EXEMPTED');
-    riskPoints = 10; // Scenario S6: common faucet control
+    // Exemption removes this relationship penalty; independent risks remain.
   }
 
   // Sparse / young history
@@ -167,7 +167,7 @@ export async function getReceiverReputation(
     !codeChanged;
 
   if (isSparse) {
-    reasonCodes.push('RECENT_DEPLOYMENT', 'UNKNOWN_AGE');
+    reasonCodes.push('UNKNOWN_AGE');
     riskPoints = 45; // Scenario S2: new vendor
   }
 
@@ -180,7 +180,7 @@ export async function getReceiverReputation(
     !clusteringResult.hasFaucetExemptions;
 
   if (isEstablished) {
-    riskPoints = 5; // Scenario S1: established merchant
+    riskPoints = 40; // Independence credit is supplied through A's validated evidence adapter, not graph size.
   }
 
   const finalRiskPoints = Math.min(100, Math.max(0, Math.round(riskPoints)));

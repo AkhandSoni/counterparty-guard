@@ -1,14 +1,11 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { formatDisplayPermitHash, nearToYocto, normalizePermitHash } from '../adapters/mockAdapter';
+import { formatDisplayPermitHash, nearToYocto} from '../adapters/mockAdapter';
 import { CodeBlock } from '../components/CodeBlock';
 import {
   AlertTriangleIcon,
-  CheckCircleIcon,
   CheckIcon,
   CopyIcon,
-  ShieldAlertIcon,
-  TerminalIcon,
 } from '../components/Icons';
 import type { Network, PendingWarningContext } from '../types';
 
@@ -126,7 +123,7 @@ export const WarningApproval: React.FC<WarningApprovalProps> = ({
   }
 
   // Exact NEAR CLI command format matching specification
-  const nearCliCommand = `near contract call-function as-transaction ${vaultAccount} approve_warn \\
+  const nearCliCommand = `# Offline preview only. B vault interface is pending; do not execute.\nnear contract call-function as-transaction ${vaultAccount} approve_warn \\
   json-args '{"permit_hash":"${canonicalHash}"}' \\
   prepaid-gas '100.0 Tgas' \\
   attached-deposit '0 NEAR' \\
@@ -331,7 +328,7 @@ export const WarningApproval: React.FC<WarningApprovalProps> = ({
               type="button"
               data-testid="copy-cli-command-btn"
               onClick={handleCopyCommand}
-              disabled={!isAllValid}
+              disabled={true}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium transition ${
                 !isAllValid
                   ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-800'

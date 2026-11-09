@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { ReportRecord } from '@counterparty-guard/shared';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   LifecycleError,
   MemoryReportLifecycleRepository,
@@ -61,7 +61,7 @@ describe('Adversarial Verification Suite: Revocation Remediation & Edge Cases (c
     it('engine.revokeBlock executes against SQLite without CHECK constraint errors, sets is_active = 0, and increments revision exactly by +1', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const sqlRepo = new ReportRepository(db);
+      const sqlRepo = new ReportRepository(db, () => now);
       const sqlEngine = new ReportLifecycleEngine(sqlRepo);
 
       const rep = createSampleReport({ accused_account_id: 'victim-merchant.testnet' });
@@ -77,7 +77,7 @@ describe('Adversarial Verification Suite: Revocation Remediation & Edge Cases (c
         rep.report_id,
         {
           decision: 'active_block',
-          scope: 'both',
+          scope: 'account',
           reason: 'Initial block after investigation',
         },
         validReviewer,
@@ -89,7 +89,7 @@ describe('Adversarial Verification Suite: Revocation Remediation & Edge Cases (c
       expect(entryId).toBeDefined();
 
       // Ensure block is currently active
-      const activeBlockBefore = sqlRepo.getActiveBlock('testnet', 'victim-merchant.testnet');
+      const activeBlockBefore = sqlRepo.getActiveBlock('testnet', 'victim-merchant.testnet', '11111111111111111111111111111111');
       expect(activeBlockBefore).not.toBeNull();
       if (!activeBlockBefore) {
         throw new Error('activeBlockBefore should exist');
@@ -116,7 +116,7 @@ describe('Adversarial Verification Suite: Revocation Remediation & Edge Cases (c
       expect(sqlRepo.getLatestBlocklistRevision()).toBe(2);
 
       // Active block must now be null
-      const activeBlockAfter = sqlRepo.getActiveBlock('testnet', 'victim-merchant.testnet');
+      const activeBlockAfter = sqlRepo.getActiveBlock('testnet', 'victim-merchant.testnet', '11111111111111111111111111111111');
       expect(activeBlockAfter).toBeNull();
 
       // Also verify code_hash query returns null
@@ -178,7 +178,7 @@ describe('Adversarial Verification Suite: Revocation Remediation & Edge Cases (c
     it('appendBlocklistRevision correctly maps action "revoke" to "revoked" and "create" to "added"', () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const sqlRepo = new ReportRepository(db);
+      const sqlRepo = new ReportRepository(db, () => now);
 
       // First create active block entry so FK constraint passes
       const block = sqlRepo.createActiveBlock({
@@ -241,7 +241,7 @@ describe('Adversarial Verification Suite: Revocation Remediation & Edge Cases (c
     it('maintains strict sequential monotonicity across 5 block additions and 5 interleaved revocations', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const sqlRepo = new ReportRepository(db);
+      const sqlRepo = new ReportRepository(db, () => now);
       const sqlEngine = new ReportLifecycleEngine(sqlRepo);
 
       const entryIds: string[] = [];
@@ -312,7 +312,7 @@ describe('Adversarial Verification Suite: Revocation Remediation & Edge Cases (c
     it('throws Error with SQLite repository when entry_id does not exist, rolls back cleanly, and leaves revisions untouched', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const sqlRepo = new ReportRepository(db);
+      const sqlRepo = new ReportRepository(db, () => now);
       const sqlEngine = new ReportLifecycleEngine(sqlRepo);
 
       expect(sqlRepo.getLatestBlocklistRevision()).toBe(0);
@@ -360,7 +360,7 @@ describe('Adversarial Verification Suite: Revocation Remediation & Edge Cases (c
     it('rejects revocation when reviewer is unauthenticated (agent context)', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const sqlRepo = new ReportRepository(db);
+      const sqlRepo = new ReportRepository(db, () => now);
       const sqlEngine = new ReportLifecycleEngine(sqlRepo);
 
       // Create a legitimate block
@@ -413,7 +413,7 @@ describe('Adversarial Verification Suite: Revocation Remediation & Edge Cases (c
     it('rejects revocation when reviewer role is unauthorized (reporter, user, observer, operator)', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const sqlRepo = new ReportRepository(db);
+      const sqlRepo = new ReportRepository(db, () => now);
       const sqlEngine = new ReportLifecycleEngine(sqlRepo);
 
       const block = sqlRepo.createActiveBlock({
@@ -464,7 +464,7 @@ describe('Adversarial Verification Suite: Revocation Remediation & Edge Cases (c
     it('empirically examines behavior of double revocation on real SQLite repository', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const sqlRepo = new ReportRepository(db);
+      const sqlRepo = new ReportRepository(db, () => now);
       const sqlEngine = new ReportLifecycleEngine(sqlRepo);
 
       const rep = createSampleReport({ accused_account_id: 'double-revoke.testnet' });
@@ -565,7 +565,7 @@ describe('Adversarial Verification Suite: Revocation Remediation & Edge Cases (c
     it('handles scope=code_hash block and revocation cleanly', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const sqlRepo = new ReportRepository(db);
+      const sqlRepo = new ReportRepository(db, () => now);
       const sqlEngine = new ReportLifecycleEngine(sqlRepo);
 
       const codeHash = '22222222222222222222222222222222';
@@ -588,7 +588,7 @@ describe('Adversarial Verification Suite: Revocation Remediation & Edge Cases (c
       );
 
       const entryId = revOutcome.review.blocklist_entry_id as string;
-      const activeByCode = sqlRepo.getActiveBlock('testnet', 'any-account.testnet', codeHash);
+      const activeByCode = sqlRepo.getActiveBlock('testnet', 'code-hash-target.testnet', codeHash);
       expect(activeByCode).not.toBeNull();
       expect(activeByCode?.contract_code_hash).toBe(codeHash);
 
@@ -600,14 +600,14 @@ describe('Adversarial Verification Suite: Revocation Remediation & Edge Cases (c
       );
       expect(unblockRes.revision).toBe(2);
 
-      const activeAfter = sqlRepo.getActiveBlock('testnet', 'any-account.testnet', codeHash);
+      const activeAfter = sqlRepo.getActiveBlock('testnet', 'code-hash-target.testnet', codeHash);
       expect(activeAfter).toBeNull();
     });
 
     it('safely handles SQL injection attempts in revocation reason and entryId', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const sqlRepo = new ReportRepository(db);
+      const sqlRepo = new ReportRepository(db, () => now);
       const sqlEngine = new ReportLifecycleEngine(sqlRepo);
 
       const rep = createSampleReport({ accused_account_id: 'sqli-victim.testnet' });
@@ -673,7 +673,7 @@ describe('Adversarial Verification Suite: Revocation Remediation & Edge Cases (c
     it('revoking an expired block sets is_active = 0 and records audit revision cleanly', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const sqlRepo = new ReportRepository(db);
+      const sqlRepo = new ReportRepository(db, () => now);
       const sqlEngine = new ReportLifecycleEngine(sqlRepo);
 
       // Create block with past expires_at

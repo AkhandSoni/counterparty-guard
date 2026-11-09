@@ -3,19 +3,8 @@
  * @description Canonical Deterministic Scenario Fixtures (S1 through S10) and Loader Utilities.
  */
 
-import {
-  type Action,
-  type Decision,
-  type DemoExecutionLog,
-  type ExecutionPermit,
-  type ReasonCode,
-  type ReportRecord,
-  ReportRecordSchema,
-  type ScenarioDefinition,
-  ScenarioDefinitionSchema,
-  type ScenarioId,
-  ScenarioIdSchema,
-} from '@counterparty-guard/shared';
+import { type ReportRecord, ReportRecordSchema } from '@counterparty-guard/shared';
+import { type Action, type Decision, type DemoExecutionLog, type ExecutionPermit, type ReasonCode, type ScenarioDefinition, ScenarioDefinitionSchema, type ScenarioId, ScenarioIdSchema } from '@counterparty-guard/shared/demo';
 
 // Re-export shared types for consumers
 export type {

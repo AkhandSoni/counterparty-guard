@@ -2,14 +2,11 @@ import type React from 'react';
 import { useMemo, useState } from 'react';
 import {
   AlertTriangleIcon,
-  BanIcon,
   CheckCircleIcon,
-  CheckIcon,
   ShieldAlertIcon,
   ShieldCheckIcon,
-  ShieldIcon,
 } from '../components/Icons';
-import type { Network, ReportCategory, ReportItem } from '../types';
+import type { Network, ReportItem } from '../types';
 
 export interface BlocklistRevisionItem {
   revisionNumber: number;

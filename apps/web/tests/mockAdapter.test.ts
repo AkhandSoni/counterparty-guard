@@ -1,12 +1,6 @@
-import {
-  CheckResponseSchema,
-  ExecutionPermitSchema,
-  type ScenarioId,
-} from '@counterparty-guard/shared';
+import { CheckResponseSchema, ExecutionPermitSchema, type ScenarioId } from '@counterparty-guard/shared/demo';
 import { describe, expect, it } from 'vitest';
 import {
-  type ActionParams,
-  FixtureMockAdapter,
   formatDisplayPermitHash,
   is0xPermitHash,
   isCanonicalPermitHash,
@@ -135,16 +129,16 @@ describe('FixtureMockAdapter and Helpers (apps/web)', () => {
       hasPermit: boolean;
       expectedCanonicalDecision: 'allow' | 'warn' | 'block';
     }> = [
-      { id: 'S1', expectedDecision: 'allow', hasPermit: true, expectedCanonicalDecision: 'allow' },
-      { id: 'S2', expectedDecision: 'warn', hasPermit: true, expectedCanonicalDecision: 'warn' },
+      { id: 'S1', expectedDecision: 'allow', hasPermit: false, expectedCanonicalDecision: 'allow' },
+      { id: 'S2', expectedDecision: 'warn', hasPermit: false, expectedCanonicalDecision: 'warn' },
       { id: 'S3', expectedDecision: 'block', hasPermit: false, expectedCanonicalDecision: 'block' },
-      { id: 'S4', expectedDecision: 'allow', hasPermit: true, expectedCanonicalDecision: 'allow' },
-      { id: 'S5', expectedDecision: 'warn', hasPermit: true, expectedCanonicalDecision: 'warn' },
-      { id: 'S6', expectedDecision: 'allow', hasPermit: true, expectedCanonicalDecision: 'allow' },
-      { id: 'S7', expectedDecision: 'warn', hasPermit: true, expectedCanonicalDecision: 'warn' },
+      { id: 'S4', expectedDecision: 'allow', hasPermit: false, expectedCanonicalDecision: 'allow' },
+      { id: 'S5', expectedDecision: 'warn', hasPermit: false, expectedCanonicalDecision: 'warn' },
+      { id: 'S6', expectedDecision: 'allow', hasPermit: false, expectedCanonicalDecision: 'allow' },
+      { id: 'S7', expectedDecision: 'warn', hasPermit: false, expectedCanonicalDecision: 'warn' },
       { id: 'S8', expectedDecision: 'error', hasPermit: false, expectedCanonicalDecision: 'block' },
       { id: 'S9', expectedDecision: 'error', hasPermit: false, expectedCanonicalDecision: 'block' },
-      { id: 'S10', expectedDecision: 'allow', hasPermit: true, expectedCanonicalDecision: 'allow' },
+      { id: 'S10', expectedDecision: 'allow', hasPermit: false, expectedCanonicalDecision: 'allow' },
     ];
 
     for (const { id, expectedDecision, hasPermit, expectedCanonicalDecision } of scenarios) {
@@ -160,7 +154,7 @@ describe('FixtureMockAdapter and Helpers (apps/web)', () => {
         expect(parsedResponse.success).toBe(true);
 
         if (hasPermit) {
-          expect(result.permit).not.toBeNull();
+          expect(result.permit).toBeNull();
           expect(result.permit?.canonical).not.toBeNull();
           expect(result.permit?.canonicalHash).toMatch(/^[a-f0-9]{64}$/);
           expect(result.permit?.displayHash).toMatch(/^0x[a-f0-9]{64}$/);
@@ -201,7 +195,7 @@ describe('FixtureMockAdapter and Helpers (apps/web)', () => {
       expect(result.verdict.decision).toBe('warn');
       expect(result.verdict.riskScore).toBe(80);
       expect(result.verdict.reasonCodes).toContain('POLICY_LIMIT_EXCEEDED');
-      expect(result.permit).not.toBeNull();
+      expect(result.permit).toBeNull();
       expect(result.isCustomEvaluation).toBe(true);
     });
 

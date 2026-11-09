@@ -8,36 +8,11 @@ import {
   type DatabaseSync,
   ReportRepository,
   createDatabase,
-  getReceiverReputation,
   runMigrations,
 } from '@counterparty-guard/reputation';
-import type { Action, Decision, ExecutionPermit } from '@counterparty-guard/shared';
-
-function buildEstablishedSubgraph(seedAccountId: string, now = Date.now()): BoundedSubgraph {
-  const normalizedSeed = seedAccountId.trim().toLowerCase();
-  const nodes = new Map();
-  nodes.set(normalizedSeed, { accountId: normalizedSeed, hop: 0, discoveredAt: now });
-  for (let i = 1; i <= 15; i++) {
-    const acc = `neighbor_${i}.testnet`;
-    nodes.set(acc, { accountId: acc, hop: 1, discoveredAt: now });
-  }
-  const adjacency = new Map();
-  for (const n of nodes.keys()) {
-    adjacency.set(n, { inEdges: [], outEdges: [] });
-  }
-  return {
-    seedAccountId: normalizedSeed,
-    nodes,
-    edges: [],
-    adjacency,
-    coverage: {
-      accountsVisited: 16,
-      edgesTraversed: 35,
-      truncated: false,
-      windowDays: 7,
-    },
-  };
-}
+import type { Action, SignedPermit } from '@counterparty-guard/shared';
+import type { Decision } from '@counterparty-guard/shared/demo';
+import { assessFixtureAction } from './assessment.js';
 
 /**
  * Thrown when Counterparty Guard halts execution before signing due to active blocklist match.
@@ -82,7 +57,7 @@ export interface GuardEvaluationResult {
   riskIndicator: number;
   reasonCodes: string[];
   reasons: string[];
-  permit: ExecutionPermit | null;
+  permit: SignedPermit | null;
   policyRevision: number;
   blocklistRevision: number;
 }
@@ -103,7 +78,7 @@ export function createDeterministicGuardDatabase(): {
     network: 'testnet',
     accused_account_id: 'known-drainer.testnet',
     scope: 'account',
-    reason: 'Active blocklist entry: Confirmed wallet drainer contract (Scenario S3)',
+    reason: 'Reviewed synthetic malicious fixture (S3); not a real allegation',
     reviewer_id: 'security_moderator_01',
   });
 
@@ -123,54 +98,12 @@ export async function evaluateGuard(
     priorApprovedCodeHash?: string | null;
   },
 ): Promise<GuardEvaluationResult> {
-  const targetReceiver = action.receiver_id;
-  const effectiveSubgraph =
-    subgraph ??
-    (targetReceiver === 'merchant.testnet' ? buildEstablishedSubgraph(targetReceiver) : undefined);
-
-  const reputation = await getReceiverReputation({
-    network,
-    accountId: targetReceiver,
-    contractCodeHash: options?.contractCodeHash,
-    priorApprovedCodeHash: options?.priorApprovedCodeHash,
-    repository,
-    subgraph: effectiveSubgraph,
-  });
-
-  const nowMs = Date.now();
-  let decision: Decision = 'allow';
-  let permit: ExecutionPermit | null = null;
-
-  if (reputation.isBlocked) {
-    decision = 'block';
-  } else if (reputation.reputationRiskPoints >= 40) {
-    decision = 'warn';
-  } else {
-    decision = 'allow';
-  }
-
-  if (decision !== 'block') {
-    permit = {
-      permit_hash: 'a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e',
-      encoded_permit_base64: 'eyJ2ZXJkaWN0IjoiYWxsb3ciLCJub25jZSI6Im5vbmNlXzAxIn0=',
-      signature:
-        'ed25519:HL9TyXQMqnAJNJZzA3kV8CA9ZFHtQsYfpJ6rq9b2Kt7sogU7zCp3iuwBisoAnerAtwZPqD1Uy79v1F6L3u6LP9W',
-      verdict: decision === 'warn' ? 'warn' : 'allow',
-      nonce: `nonce_${nowMs.toString(36)}`,
-      issued_at: nowMs,
-      expires_at: nowMs + 120_000,
-    };
-  }
-
-  return {
-    decision,
-    riskIndicator: reputation.reputationRiskPoints,
-    reasonCodes: reputation.reasonCodes,
-    reasons: reputation.reasonCodes.map((c) => `Evaluated rule: ${c}`),
-    permit,
-    policyRevision: 1,
-    blocklistRevision: reputation.blocklistRevision,
-  };
+  const result = await assessFixtureAction(action, repository, { now: repository.now(), graph: subgraph, reportNetwork: network === 'sandbox' ? 'sandbox' : 'testnet',
+    ageDays: action.receiver_id === 'merchant.testnet' ? 100 : null,
+    independentCounterparties: action.receiver_id === 'merchant.testnet' ? 15 : 0,
+    currentCode: options?.contractCodeHash, previousCode: options?.priorApprovedCodeHash });
+  return { decision: result.decision, riskIndicator: result.risk_indicator, reasonCodes: result.reason_codes,
+    reasons: result.reasons, permit: result.permit, policyRevision: Number(result.policy_revision), blocklistRevision: Number(result.blocklist_revision) };
 }
 
 export interface GuardedExecutionOutcome {
@@ -222,9 +155,9 @@ export async function guardedAgentExecute(
   }
 
   // 4. Allowed transaction: proceed to simulated signing & submission
-  const signed = true;
-  const submitted = true;
-  const delta = action.kind === 'transfer_near' ? action.amount_yocto : '0';
+  const signed = false;
+  const submitted = false;
+  const delta = '0';
 
   return {
     decision: 'allow',
@@ -232,7 +165,7 @@ export async function guardedAgentExecute(
     permitHash: evaluation.permit?.permit_hash ?? null,
     signed,
     submitted,
-    finalizedOutcome: 'executed_success',
+    finalizedOutcome: 'fixture_assessment_only',
     receiverBalanceDelta: delta,
   };
 }

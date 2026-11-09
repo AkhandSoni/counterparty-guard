@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "migrations": [
+    {
+      "id": "core-001",
+      "path": "core/001_initial.sql"
+    },
+    {
+      "id": "core-002",
+      "path": "core/002_execution_chronology.sql"
+    },
+    {
+      "id": "reports-001",
+      "path": "reports/001_initial_reports.sql"
+    },
+    {
+      "id": "reports-002",
+      "path": "reports/002_report_lifecycle.sql"
+    },
+    {
+      "id": "reports-003",
+      "path": "reports/003_blocklist_revisions.sql"
+    },
+    {
+      "id": "reports-004",
+      "path": "reports/004_dependence_groups.sql"
+    }
+  ]
+}

@@ -12,9 +12,6 @@
 
 import { describe, expect, it } from 'vitest';
 import {
-  DEFAULT_MAX_ACCOUNTS,
-  DEFAULT_MAX_EDGES,
-  DEFAULT_MAX_HOPS,
   DEFAULT_WINDOW_DAYS,
   type GraphDataProvider,
   type GraphEdge,
@@ -1085,7 +1082,7 @@ describe('Milestone M4 Empirical Challenge: Traversal & Bounds Stress Testing', 
       const asyncProvider: GraphDataProvider = {
         async getAdjacentEdges(
           accountIds: string[],
-          options: {
+          _options: {
             network: NetworkType;
             sinceTimestamp: number;
             untilTimestamp?: number;

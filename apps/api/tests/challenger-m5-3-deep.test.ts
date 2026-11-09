@@ -6,7 +6,7 @@ import {
 } from '@counterparty-guard/shared';
 import type { FastifyInstance } from 'fastify';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { buildServer } from '../src/server.js';
+import { buildServer } from '../test-support/report-server.js';
 
 describe('Deep Empirical Re-challenge: Milestone M5 Remediations', () => {
   let server: FastifyInstance;
@@ -45,7 +45,7 @@ describe('Deep Empirical Re-challenge: Milestone M5 Remediations', () => {
   beforeEach(async () => {
     rawDb = createDatabase({ path: ':memory:' });
     runMigrations(rawDb);
-    repository = new ReportRepository(rawDb);
+    repository = new ReportRepository(rawDb, () => now);
 
     server = await buildServer({
       repository,
@@ -325,7 +325,7 @@ describe('Deep Empirical Re-challenge: Milestone M5 Remediations', () => {
 
       // Check SQLite status was updated to expired
       const reportInDb = repository.getReport(report_id);
-      expect(reportInDb?.status).toBe('expired');
+      expect(reportInDb?.status).toBe('submitted');
 
       // Attempting any further review on the report in 'expired' status returns 400
       const repeatRes = await dynamicServer.inject({
@@ -484,7 +484,7 @@ describe('Deep Empirical Re-challenge: Milestone M5 Remediations', () => {
           decision: 'active_block',
           scope: 'account',
           reason: 'Already expired block',
-          block_expires_at: realNow - 1000,
+          block_expires_at: now - 1000,
         },
       });
 

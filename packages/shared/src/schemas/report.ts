@@ -37,7 +37,7 @@ export const SubmitReportRequestSchema = z
       .default([]),
     contract_code_hash: z
       .string()
-      .regex(/^[a-f0-9]{64}$/)
+      .min(1).max(128)
       .nullable()
       .optional(),
     issued_at: z.number().int().positive(),
@@ -60,8 +60,8 @@ export const ReviewReportRequestSchema = z.object({
 export type ReviewReportRequest = z.infer<typeof ReviewReportRequestSchema>;
 
 export const ReviewRecordSchema = z.object({
-  review_id: z.string().uuid(),
-  report_id: z.string().uuid(),
+  review_id: z.guid(),
+  report_id: z.guid(),
   reviewer_id: z.string().min(2).max(64),
   status: ReportStatusSchema,
   decision: z.enum(['active_block', 'dismissed', 'corroborated', 'rejected']),
@@ -74,7 +74,7 @@ export const ReviewRecordSchema = z.object({
 export type ReviewRecord = z.infer<typeof ReviewRecordSchema>;
 
 export const ReportRecordSchema = z.object({
-  report_id: z.string().uuid(),
+  report_id: z.guid(),
   network: z.enum(['testnet', 'mainnet', 'sandbox']),
   accused_account_id: z.string(),
   reporter_id: z.string(),
@@ -95,7 +95,7 @@ export const ReportRecordSchema = z.object({
 export type ReportRecord = z.infer<typeof ReportRecordSchema>;
 
 export const SubmitReportResponseSchema = z.object({
-  report_id: z.string().uuid(),
+  report_id: z.guid(),
   status: z.literal('submitted'),
   issued_at: z.number().int().positive(),
   expires_at: z.number().int().positive(),
@@ -116,7 +116,7 @@ export const DependenceGroupSchema = DependenceGroupSummarySchema;
 export type DependenceGroup = DependenceGroupSummary;
 
 export const ReportSummarySchema = z.object({
-  report_id: z.string().uuid(),
+  report_id: z.guid(),
   reporter_id: z.string(),
   category: ReportCategorySchema,
   status: ReportStatusSchema,
@@ -138,7 +138,7 @@ export const ReportDetailResponseSchema = GetReportResponseSchema;
 export type ReportDetailResponse = GetReportResponse;
 
 export const ReviewReportResponseSchema = z.object({
-  review_id: z.string().uuid(),
+  review_id: z.guid(),
   status: z.string(),
   blocklist_revision: z.number().int().nonnegative(),
 });

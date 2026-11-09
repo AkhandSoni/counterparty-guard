@@ -1,175 +1,94 @@
-# Counterparty Guard: Agent C — Reputation & Experience
+# Counterparty Guard
 
-[![CI](https://img.shields.io/badge/tests-698%20passing-brightgreen.svg)]()
-[![Typecheck](https://img.shields.io/badge/typescript-strict-blue.svg)]()
-[![Linter](https://img.shields.io/badge/linter-biome-purple.svg)]()
-[![Platform](https://img.shields.io/badge/near-protocol-black.svg)]()
+[Public repository](https://github.com/medhansh-19/counterparty-guard) · NEAR testnet/local sandbox · TypeScript/pnpm · API and reputation integration
 
-**Counterparty Guard** provides in-process defense-in-depth security for autonomous AI agents transacting on NEAR Protocol. Autonomous agents processing untrusted external inputs—such as natural language invoices, memo fields, and third-party API payloads—are vulnerable to prompt injection attacks attempting to divert treasury funds to attacker-controlled accounts.
+Before an AI agent pays, assess the exact receiver and action. Return `allow`, `warn` or `block` with retained evidence, stable reasons and source freshness. Eligible actions receive a signed, expiring, single-use permit for B’s independently enforcing vault.
 
-**Agent C ("Reputation and Experience")** is the counterparty risk mitigation engine of Counterparty Guard. It intercepts proposed transactions *prior to cryptographic signing*, analyzing counterparty risk through signed allegation intake, bounded on-chain graph analysis, Sybil clustering, faucet exemptions, and contract bytecode tracking.
+**Person A is implemented:** authenticated Fastify API, SQLite migrations/persistence, strict shared schemas and deterministic Borsh codec, provider adapters, deterministic scoring, pre-sign revalidation and trusted execution-reconciliation interfaces. C’s signed reports, reviewer audit, bounded graph features, dashboard and fixture assessment demo are integrated. B’s contracts/SDK remain a separate PR. No chain payment or vault enforcement is claimed by this backend alone.
 
----
+## Run locally
 
-## Key Capabilities
+Tested toolchain: Node 26.7.0, pnpm 11.25.0. Use `.node-version`; the native SQLite module must be rebuilt if you switch Node ABI. Native installation may need a C++ toolchain and Python. Exact dependencies and the lockfile are committed.
 
-1. **In-Process Pre-Signing Interception**:
-   Transactions targeting blocked or unapproved counterparties are refused before transaction signing (`signed: false, submitted: false, delta: "0"`), protecting agent private keys and treasury balances.
-2. **Cryptographic Signed Report Intake (`packages/reputation`)**:
-   Ed25519-signed allegations with domain separation (`COUNTERPARTY_GUARD_REPORT_V1`), monotonic nonce replay protection, and time-bound expiry validation.
-3. **Absolute Reviewer Authority**:
-   Raw unreviewed allegation counts can **never** trigger an active hard block. Active blocks strictly require authenticated human reviewer authority via `POST /v1/reports/:id/review`. Agent tokens receive HTTP 403 Forbidden.
-4. **Bounded Graph Analysis & Sybil Discounting**:
-   Explores transaction topology bounded to 2 hops, 100 accounts, 500 edges, and a 7-day rolling window. Coordinated Sybil clusters sharing common funding ancestry are capped at a total weight of 1.0 independent source equivalent.
-5. **Common Faucet Exemption Registry**:
-   Legitimate shared infrastructure (such as `faucet.testnet` and `testnet`) is exempted from Sybil clustering, preserving full independent reporting weights (1.0 each) for legitimate developers and users.
-6. **Contract Upgrade Reassessment**:
-   Bytecode hash changes (`CODE_CHANGED`) immediately suspend prior trust credit, escalate risk to 55, and require human owner on-chain permit authorization (`vault.approve_warn`).
-7. **Explanation Dashboard (`apps/web`)**:
-   React + Vite interface featuring live check action inspection, receiver evidence timelines with graph relationship explanations, owner warning guidance, and a human reviewer moderation portal.
-8. **Demonstration Harness (`scripts/demo`)**:
-   Deterministic and sandbox/testnet runners (`pnpm demo:attack`, `pnpm demo:all`) emitting structured JSONL audit logs.
-
----
-
-## Monorepo Layout
-
-```
-/home/manit/Programming/Near_hack/
-├── packages/
-│   ├── shared/                # Canonical Zod schemas, types, domain constants, Borsh helpers
-│   └── reputation/            # Core reputation engine, SQLite repository, graph traversal
-├── apps/
-│   ├── api/                   # Fastify HTTP microservice for reports & reviewer administration
-│   └── web/                   # React 18 + Vite explanation dashboard & moderation portal
-├── fixtures/                  # Deterministic scenario datasets for scenarios S1–S10
-├── scripts/demo/              # Demonstration runners, execution adapters, and JSONL logger
-├── tests/regression/          # Adversarial regression suites (S4 flood, S6 faucet, S7 upgrade)
-└── docs/
-    ├── demo.md                # Capability showcase & reproduction guide
-    └── demo-logs/             # Real execution audit logs (*.jsonl)
+```sh
+pnpm install --frozen-lockfile
+pnpm setup:local
+pnpm smoke:api
+GUARD_CONFIG_FILE=artifacts/local/config.json pnpm dev:api
 ```
 
-| Path | Description | Scope |
-|:---|:---|:---|
-| `packages/shared` | Core schemas, domain constants, Borsh & Ed25519 cryptographic helpers | Monorepo Shared |
-| `packages/reputation` | SQLite storage, bounded graph traversal, Sybil clustering, scoring engine | Agent C Core |
-| `apps/api` | Fastify REST API for report intake, queries, and reviewer management | Service Layer |
-| `apps/web` | React + Vite explanation dashboard and reviewer moderation portal | Presentation Layer |
-| `fixtures` | Canonical scenario datasets S1 through S10 | Testing & Demo |
-| `scripts/demo` | Prompt-injection attack runner and multi-scenario demo harness | Showcase |
-| `tests/regression` | Automated regression suites for Sybil floods, faucet controls, and upgrades | Security Invariants |
-| `docs/demo.md` | Comprehensive capability showcase and invariant reproduction walkthrough | Documentation |
-| `docs/demo-logs` | Structured JSONL execution logs from real runner executions | Audit Trail |
+Local setup generates a random service key, bearer credential and fixture configuration under ignored `artifacts/local/`, with private file permissions. Re-running setup preserves these files and the database. The credential contents are never printed. The standalone server binds to loopback and sandbox fixture mode only; fixtures use visibly synthetic block references and timestamps. `merchant.testnet` allows; `new-receiver.testnet` warns. These names in sandbox fixtures are not claims about real testnet accounts.
 
----
+The smoke command starts a temporary real HTTP service, verifies real service signatures, exercises durable retries/revalidation, and confirms no chain signing/submission. A service signature is not hardware attestation. `attestation` is always `null`.
 
-## Core Security Invariants
+## Validation
 
-| # | Invariant | Description | Guaranteed Outcome |
-|:---|:---|:---|:---|
-| **1** | **Refuse Before Signing** | Transactions targeting blocked counterparties are aborted *prior* to signing. | `signed: false, submitted: false, delta: "0"` |
-| **2** | **Absolute Reviewer Authority** | Raw unreviewed allegations can never block. Hard blocks require human reviewer auth. | Agent tokens get HTTP 403; unreviewed flood gets `allow`. |
-| **3** | **Sybil Discounting** | Correlated reports sharing funding ancestry are clustered into a dependence group. | Aggregate group weight capped to 1.0; pro-rata `1.0/N`. |
-| **4** | **Common Faucet Exemption** | Accounts funded by official faucets (`faucet.testnet`) are never clustered as Sybils. | Faucet accounts retain 1.0 weight each; evasion resistant. |
-| **5** | **Contract Upgrade Reassessment** | Bytecode hash changes suspend historical credit and force warning reassessment. | Decision `warn`, risk 55; requires human owner `vault.approve_warn`. |
-
----
-
-## Quickstart & Commands
-
-### Prerequisites
-- Node.js >= 20.18.0
-- pnpm >= 9.0.0 (or pnpm 11)
-
-### Installation & Build
-```bash
-# Install all dependencies across workspace
-pnpm install
-
-# Compile all workspace packages and apps
-pnpm build
-```
-
-### Automated Verification
-```bash
-# Run all automated unit, integration, and regression tests (698 tests)
-pnpm test
-
-# Run TypeScript typecheck (0 errors)
-pnpm typecheck
-
-# Run Biome linter across workspace (0 errors)
+```sh
 pnpm lint
+pnpm typecheck
+pnpm test
+pnpm test:integration
+pnpm verify:interfaces
+pnpm smoke:api
+pnpm audit --prod
 ```
 
-### Demonstration Runners
-```bash
-# 1. Run prompt-injection attack demonstration runner
-pnpm demo:attack
+`pnpm demo:attack` runs an actual scripted prompt-injection tool call against A+C’s fixture assessment path; its JSONL contains a real decision and no agent signature/submission. `pnpm demo:all -- --scenario S1` demonstrates a legitimate allow assessment with a real service-signed permit and no chain execution. Full `pnpm demo:all` exits nonzero because S8 requires B’s vault/replay enforcement; sandbox/testnet adapters also explicitly report unavailable and never relabel simulations as chain execution. `pnpm test:e2e` remains unavailable until B’s key/approval/budget/receipt flows exist. See [demo scope and reproduction](docs/demo.md).
 
-# Run with step-by-step verbose output
-pnpm demo:attack -- --verbose
+## Dashboard and report review
 
-# 2. Run comprehensive 10-scenario demonstration runner
-pnpm demo:all
+With the API running, use a second terminal:
 
-# CLI options for demo:all
-pnpm demo:all --scenario S7     # Run specific scenario
-pnpm demo:all --json            # Output raw JSONL lines to stdout
-pnpm demo:all --verbose         # Detailed assertion and latency breakdown
+```sh
+pnpm dev:web
 ```
 
-### Dashboard & API Service
-```bash
-# Start Fastify Report API (port 3001)
-pnpm --filter api dev
+Open `http://127.0.0.1:5173`. The default **Connected API** view reads the actual service. Enter the agent credential from the private `artifacts/local/agent-token` file locally; it stays in component memory. View exact yoctoNEAR amounts, verdicts, expiry, retained evidence and service-signed permits. The other tabs are visibly offline examples and never mint authorizations.
 
-# Start React Explanation Dashboard (port 5173)
-pnpm --filter web dev
-```
+New local setups create an independent `artifacts/local/reviewer-token` and store only its hash in the private service config. Existing setups are preserved: provision a separate random reviewer credential and its SHA256 hash as `reviewer_credential_hash` before reviews are enabled. Never reuse the agent credential. The Connected API review form submits authenticated decisions with a reason and report ID; activation/rejection updates the audit ledger and invalidates retained checks. A header or UI toggle cannot grant reviewer authority.
 
-Visit `http://localhost:5173` to explore:
-- **Check Action View**: Evaluate counterparties and inspect real-time risk scores and reason codes.
-- **Evidence Timeline**: View historical reports, code hashes, and graph relationship explanations.
-- **Warning Approvals**: Copy NEAR CLI commands to approve warned transactions on the vault contract.
-- **Reviewer Portal**: Corroborate reports and inspect append-only blocklist revisions.
+All report migrations append to `db/migrations.json`. They share the core database and its immutable migration checksums. `core-001` and `core-002` are unchanged.
 
----
+## Backend interfaces
 
-## Scenario Matrix (S1–S10)
+- `POST /v1/checks`: authenticate a registered agent, assess an immutable exact action and persist the eligible permit before returning it.
+- `GET /v1/checks/:id`: read that agent’s stored result.
+- `GET /v1/checks/:id/evidence`: read the immutable retained evidence snapshot and hash.
+- `POST /v1/checks/:id/revalidate`: refresh security facts without extending the original permit.
+- `GET /v1/receivers/:network/:account`: inspect retained agent-scoped receiver evidence/history.
+- `GET /v1/executions/:id`: read reconciled execution state from a trusted injected source.
+- `POST /v1/reports`: bounded, domain-signed report intake with expiry/nonce checks.
+- `GET /v1/reports/:id`: allegation, evidence references and audit history.
+- `POST /v1/reports/:id/review`: independently authenticated activation or corrective review; rejection/dismissal revokes that report’s blocks.
+- `GET /v1/receivers/:network/:account/reports`: report weights and dependence explanations.
+- `POST /v1/blocklist/:id/revoke`: audited reviewer removal, including after report expiry.
+- `GET /health`: sanitized database/configuration readiness.
 
-| ID | Name | Receiver | Decision | Reason Codes | Signed | Subm | Outcome | Delta |
-|:---|:---|:---|:---:|:---|:---:|:---:|:---|:---:|
-| **S1** | Established Legitimate Receiver | `merchant.testnet` | **ALLOW** | `[]` | `true` | `true` | `finalized_transfer` | `+0.05 NEAR` |
-| **S2** | Legitimate New Receiver | `new-vendor.testnet` | **WARN** | `RECENT_DEPLOYMENT`, `UNKNOWN_AGE` | `false` | `false` | `awaiting_owner_approval` | `0` |
-| **S3** | Reviewed Malicious Receiver | `known-drainer.testnet` | **BLOCK** | `ACTIVE_BLOCK`, `REVIEWED_BLOCKLIST_MATCH` | `false` | `false` | `aborted_before_signing` | `0` |
-| **S4** | False-Report Flood Attack | `popular-service.testnet` | **ALLOW** | `DEPENDENT_REPORTS` | `true` | `true` | `finalized_transfer` | `+0.05 NEAR` |
-| **S5** | Circular Activity Manipulation | `wash-trader-a.testnet` | **WARN** | `CIRCULAR_ACTIVITY` | `false` | `false` | `awaiting_owner_approval` | `0` |
-| **S6** | Shared Common Faucet Control | `user-b.testnet` | **ALLOW** | `COMMON_FAUCET_EXEMPTED` | `true` | `true` | `finalized_transfer` | `+0.05 NEAR` |
-| **S7** | Upgraded Contract Receiver | `defi-pool.testnet` | **WARN** | `CODE_CHANGED` | `false` | `false` | `awaiting_owner_approval` | `0` |
-| **S8** | Permit Replay / Mutation | `merchant.testnet` | **ALLOW** | `POLICY_LIMIT_EXCEEDED` | `true` | `true` | `vault_rejected` | `0` |
-| **S9** | Provider Outage (Fail-Closed) | `outage-target.testnet` | **BLOCK** | `MANDATORY_SOURCE_UNAVAILABLE`, `INCOMPLETE_HISTORY` | `false` | `false` | `refused_source_outage` | `0` |
-| **S10** | Supported Method Call Boundary | `staking-pool.testnet` | **ALLOW** | `[]` | `true` | `true` | `finalized_call` | `+0.01 NEAR` |
+Bearer credentials derive agent identity server-side. Request fields cannot grant another agent’s history/policy or reviewer authority. Amounts are canonical decimal yoctoNEAR strings with u128 bounds; revisions are u64 strings; timestamps are bounded integer milliseconds. No public endpoint accepts claimed execution success.
 
----
+Use `createApp` to assemble live providers with trusted B policy/finality and C reputation/report adapters. The standalone fixture server refuses live mode and reads reviewed report state from its shared SQLite database; synthetic fixture state cannot issue a testnet permit. Live source adapters have successful read-only testnet probes; those probes are not a payment demo.
 
-## Test Suite Coverage
+## Security boundaries
 
-| Suite | Scope | Files | Tests | Invariants Covered |
-|:---|:---|:---:|:---:|:---|
-| `packages/reputation` | Intake, nonces, signatures, SQLite, graph, clustering, scoring | 15 | 240+ | Invariants 1, 2, 3, 4, 5 |
-| `packages/shared` | Zod schemas, Ed25519 cryptography, payload serialization | 4 | 56 | Cryptographic integrity |
-| `apps/api` | Fastify endpoints, reviewer auth, 403 agent rejection, queries | 3 | 100 | Invariant 2 (Reviewer Auth) |
-| `apps/web` | React views, evidence timeline, graph panel, approval UI | 7 | 131 | UI/UX & Owner guidance |
-| `fixtures` | S1–S10 dataset validation and boundary checks | 2 | 58 | Scenario consistency |
-| `scripts/demo` | Runner harness, guard interceptor, JSONL logging assertions | 3 | 49 | Invariant 1 (Refuse pre-signing) |
-| `tests/regression` | Adversarial flood, faucet control, contract upgrades, full E2E | 5 | 63 | Invariants 1, 2, 3, 4, 5 |
-| **Total Monorepo** | **Full Verification** | **40** | **698** | **Zero failures / 100% passing** |
+`block` has no permit. `warn` never grants automatic signing authority; B’s vault must verify the owner’s approval of the exact permit hash. Missing mandatory current-state/reputation/policy/storage produces a typed non-success response without a permit. Reviewed active block entries override positive history; raw report counts cannot manufacture a hard block. Indexed activity earns no live independence credit until a justified independent-activity adapter is implemented; current live independence credit is conservative zero.
 
----
+The agent must receive only a function-call key restricted to the vault’s `execute` method with zero attached deposit. The prefunded vault supplies payment value. The owner/recovery key stays outside the agent runtime. Gas allowance is separate from payment limits; topping up the account does not replenish it, and an existing key’s allowance cannot be edited. Replace an exhausted key through the external recovery path; retain explicit method restrictions and a finite allowance. See [NEAR access-key restrictions and caveats](https://docs.near.org/protocol/accounts-contracts/access-keys).
 
-## Documentation
+The vault cannot atomically inspect another contract’s latest code or the service’s latest blocklist. Short expiry, SDK revalidation and emergency pause reduce a bounded race; they do not remove it. B must independently enforce signature origin, complete action binding, expiry, nonce, policy, warning approval, budgets and conservative pending accounting. Rust/TypeScript byte equality and B/C owner review remain integration gates.
 
-- **[Demo Guide (`docs/demo.md`)](docs/demo.md)**: In-depth showcase guide, prompt-injection attack mechanics, step-by-step reproduction walkthrough, and JSONL audit logging specification.
-- **[Demo Logs (`docs/demo-logs/`)](docs/demo-logs/)**: Execution logs capturing real runs of `demo:attack` and `demo:all`.
+## Ownership and documentation
+
+Medhansh is **Person A**: API (except report routes), shared TypeScript, providers, scoring, core DB, root JS tooling/lockfile and README. B owns contracts, guarded SDK and chain scripts; C owns reports/reputation, dashboard, fixtures and demo. C’s contribution is now connected through A’s report-plugin and reputation-provider interfaces. B owns the remaining chain execution gates.
+
+- [Product scope and equal-effort plan](PLAN.md)
+- [Person A package plan](docs/person-a-plan.md)
+- [API/auth/persistence](docs/api.md)
+- [Source capabilities and read-only validation](docs/sources.md)
+- [Scoring rules](docs/scoring.md)
+- [Permit bytes and public golden vectors](docs/permit-v1.md)
+- [B/C integration contract](docs/integration-contracts.md)
+- [Security model and limitations](docs/security.md)
+- [Local operations and recovery boundaries](docs/runbook.md)
+- [Person A handoff](docs/person-a-handoff.md)
+- [Repository workflow](docs/repository-workflow.md)
+- [Architecture decisions](docs/decisions.md)

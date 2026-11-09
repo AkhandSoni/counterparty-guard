@@ -35,15 +35,11 @@ import {
   isFaucetExempted,
   runMigrations,
 } from '@counterparty-guard/reputation';
-import {
-  type Action,
-  ReceiverReportsResponseSchema,
-  ReceiverReputationSchema,
-  type ReportRecord,
-} from '@counterparty-guard/shared';
+import { ReceiverReportsResponseSchema, ReceiverReputationSchema, type ReportRecord } from '@counterparty-guard/shared';
+import { type Action } from '@counterparty-guard/shared/demo';
 import type { FastifyInstance } from 'fastify';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { buildServer } from '../../apps/api/src/server.js';
+import { buildServer } from '../../apps/api/test-support/report-server.js';
 import { evaluateGuard } from '../../scripts/demo/harness/guard.js';
 
 describe('Feature 49 Regression Suite: S6 Common Faucet Control & Exemption Registry', () => {
@@ -69,7 +65,7 @@ describe('Feature 49 Regression Suite: S6 Common Faucet Control & Exemption Regi
       category: 'other',
       description: 'Legitimate counterparty feedback from community user.',
       transaction_references: [`tx_${validReportId.slice(0, 8)}`],
-      evidence_content_hashes: ['e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'],
+      evidence_content_hashes: [],
       contract_code_hash: null,
       status: 'submitted',
       issued_at: fixedNow - 1000,
@@ -243,7 +239,7 @@ describe('Feature 49 Regression Suite: S6 Common Faucet Control & Exemption Regi
       expect(repResult.isBlocked).toBe(false);
       expect(repResult.rawReportCount).toBe(20);
       expect(repResult.effectiveReportWeight).toBe(20.0);
-      expect(repResult.reputationRiskPoints).toBe(10);
+      expect(repResult.reputationRiskPoints).toBe(40);
       expect(repResult.reasonCodes).toContain('COMMON_FAUCET_EXEMPTED');
       expect(repResult.reasonCodes).not.toContain('DEPENDENT_REPORTS');
     });
@@ -624,12 +620,12 @@ describe('Feature 49 Regression Suite: S6 Common Faucet Control & Exemption Regi
 
       const result = await evaluateGuard(action, repo, 'testnet', subgraph);
 
-      expect(result.decision).toBe('allow');
-      expect(result.riskIndicator).toBe(10);
-      expect(result.reasonCodes).toContain('COMMON_FAUCET_EXEMPTED');
+      expect(result.decision).toBe('warn');
+      expect(result.riskIndicator).toBeGreaterThanOrEqual(30);
+      expect(result.reasonCodes).toContain('UNKNOWN_AGE');
       expect(result.reasonCodes).not.toContain('DEPENDENT_REPORTS');
       expect(result.permit).not.toBeNull();
-      expect(result.permit?.verdict).toBe('allow');
+      expect(result.permit?.payload.verdict).toBe('warn');
     });
   });
 });

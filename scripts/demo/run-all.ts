@@ -21,7 +21,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { type ScenarioId, ScenarioIdSchema } from '@counterparty-guard/shared';
+import { type ScenarioId, ScenarioIdSchema } from '@counterparty-guard/shared/demo';
 import {
   type ExecutionMode,
   type ScenarioExecutionResult,
@@ -101,7 +101,7 @@ export async function runAllScenarios(options: RunAllOptions = {}): Promise<RunA
     ? [options.scenarioId]
     : ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10'];
 
-  const defaultLogDir = path.resolve(process.cwd(), 'docs/demo-logs');
+  const defaultLogDir = path.resolve(process.cwd(), 'artifacts/demo');
   const logFilePath = options.logFilePath ?? path.join(defaultLogDir, `demo-all-${mode}.jsonl`);
 
   // Ensure log directory exists

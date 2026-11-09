@@ -82,7 +82,7 @@ describe('Empirical Adversarial Challenge Suite: Lifecycle & Reviewer Authority 
     it('S4 SQLite Persistence: 1,000 reports inserted into real SQLite database produce zero active blocks', () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const sqlRepo = new ReportRepository(db);
+      const sqlRepo = new ReportRepository(db, () => now);
 
       const targetAccount = 'victim-merchant.testnet';
       const floodSize = 1_000;
@@ -519,7 +519,7 @@ describe('Empirical Adversarial Challenge Suite: Lifecycle & Reviewer Authority 
     it('SQLite Monotonicity: Direct repository calls enforce strictly monotonic blocklist revisions', () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const sqlRepo = new ReportRepository(db);
+      const sqlRepo = new ReportRepository(db, () => now);
 
       expect(sqlRepo.getLatestBlocklistRevision()).toBe(0);
 
@@ -571,7 +571,7 @@ describe('Empirical Adversarial Challenge Suite: Lifecycle & Reviewer Authority 
     it('verifies fix: engine.revokeBlock succeeds without SQLite CHECK constraint when called with ReportRepository', async () => {
       const db = createDatabase({ path: ':memory:' });
       runMigrations(db);
-      const sqlRepo = new ReportRepository(db);
+      const sqlRepo = new ReportRepository(db, () => now);
       const sqlEngine = new ReportLifecycleEngine(sqlRepo);
 
       // Setup report and active block via engine
