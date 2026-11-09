@@ -200,3 +200,24 @@ $ tsx scripts/demo/run-attack.ts -- --log-file artifacts/local/person-b-attack.j
 
 $ pnpm audit --prod
 No known vulnerabilities found
+
+
+PR3 nonce-coordination follow-up — 9 November 2026
+$ pnpm lint
+Passed.
+$ pnpm typecheck
+Passed root, C tests and web typechecks.
+$ pnpm test
+46 files, 800 tests passed (33 guard tests).
+$ pnpm test:integration
+2 files, 46 tests passed.
+$ pnpm test:e2e
+Cargo formatting passed; 9 Rust unit tests passed; both release Wasm builds passed.
+3 sandbox suites passed, including:
+SDK concurrent processes: both distinct payments finalized
+SDK failed target: finalized nonexecution verified and reconciled
+SDK S7: real changed-code warning with finalized history
+$ cargo clippy --workspace --all-targets --locked -- -D warnings
+Passed.
+Concurrency evidence is actual local sandbox execution with synthetic risk inputs.
+No funded testnet result is claimed.

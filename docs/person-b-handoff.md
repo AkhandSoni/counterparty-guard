@@ -41,3 +41,10 @@ No project-owned funded testnet account/credential was configured. Testnet deplo
 B's C-area review found the default connected view needed a canonical owner-command handoff; it now displays a public request containing the exact signed permit for the separate owner CLI. The browser has no owner secret or approval Boolean. C's offline preview remains labelled nonexecutable and does not grant chain authority. A must review enforcement/permit/finality integration, and C should review this small connected-view change. Those independent human reviews are not claimed completed.
 
 The local fork is `AkhandSoni/counterparty-guard`; upstream is `medhansh-19/counterparty-guard`. This delivery is pushed on `feat/b-enforcement` and proposed to upstream via PR, without merging it or changing upstream main.
+
+
+## PR3 review follow-up — access-key nonce coordination
+
+The restricted signer now requires a fourth constructor argument, a shared durable `TransactionNonceStore`; `SqliteAttemptStore` implements it. All workers using an access key must share this database. An atomic reservation persists across restarts, and subsequent signing waits for finalized consumption of the prior nonce. A guaranteed pre-sign `SigningUnavailable` releases only the request claim for an explicit retry; any signed/uncertain outcome remains locked. Unresolved nonce reservations require reconciliation or independent key replacement, never a timeout reset. See D012 and the updated SDK/chain guides.
+
+Follow-up local validation passed: lint, typecheck, 800 TypeScript tests (33 guard tests), 46 API integration tests, Cargo formatting, nine Rust unit tests, both Wasm builds, three actual sandbox suites and strict workspace Clippy. The sandbox now additionally launches two concurrent TypeScript SDK processes sharing a nonce store and verifies that both distinct payments finalize with a combined receiver increase of two yoctoNEAR. No testnet deployment was performed.

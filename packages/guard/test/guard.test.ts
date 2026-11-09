@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe,it,expect,vi } from 'vitest';
 import { signPermit, publicKeyFromKeyObject, type Action, type CheckRequest, type CheckResponse, type Permit } from '@counterparty-guard/shared';
-import { Guard, MemoryAttemptStore, SqliteAttemptStore, CounterpartyBlocked, WarningApprovalRequired, ExecutionUncertain, type GuardConfig, type ChainReader, type AssessmentClient } from '../src/index.js';
+import { Guard, MemoryAttemptStore, SqliteAttemptStore, CounterpartyBlocked, WarningApprovalRequired, ExecutionUncertain, SigningUnavailable, type GuardConfig, type ChainReader, type AssessmentClient } from '../src/index.js';
 
 function setup(verdict: 'allow'|'warn'|'block' = 'allow') {
   const scorer=generateKeyPairSync('ed25519'),agent=generateKeyPairSync('ed25519');
@@ -55,6 +55,18 @@ describe('guard signer boundary',()=>{
   it('keeps a signing claim when the signer might have signed before throwing',async()=>{
     const s=setup();s.signer.sign=vi.fn(async()=>{throw new Error('hardware disconnected');});await expect(s.guard.execute(s.request)).rejects.toThrow();
     expect(await s.store.get(s.request.request_id)).toMatchObject({state:'uncertain',submitted:false});await expect(s.guard.execute(s.request)).rejects.toBeInstanceOf(ExecutionUncertain);
+  });
+  it('allows the same request to retry after guaranteed pre-sign nonce contention',async()=>{
+    const s=setup();s.signer.sign.mockRejectedValueOnce(new SigningUnavailable('Previous transaction is not finalized'));
+    await expect(s.guard.execute(s.request)).rejects.toBeInstanceOf(SigningUnavailable);
+    expect(await s.store.get(s.request.request_id)).toBeNull();expect(s.signer.submit).not.toHaveBeenCalled();
+    await s.guard.execute(s.request);expect(s.signer.submit).toHaveBeenCalledTimes(1);
+  });
+  it('never releases a signed request because submission reports SigningUnavailable',async()=>{
+    const s=setup();s.signer.submit.mockRejectedValueOnce(new SigningUnavailable('Submission failed'));
+    await expect(s.guard.execute(s.request)).rejects.toBeInstanceOf(SigningUnavailable);
+    expect(await s.store.get(s.request.request_id)).toMatchObject({state:'uncertain',signed:true});
+    await expect(s.guard.execute(s.request)).rejects.toBeInstanceOf(ExecutionUncertain);
   });
   it('durable SQLite claims survive restart and exclude another process',async()=>{
     const s=setup();const dir=mkdtempSync(join(tmpdir(),'guard-store-'));const path=join(dir,'attempts.sqlite');let a:SqliteAttemptStore|undefined,b:SqliteAttemptStore|undefined;

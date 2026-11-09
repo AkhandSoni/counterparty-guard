@@ -566,6 +566,18 @@ async fn typescript_sdk_full_flow() -> Result<()> {
         }
         println!("SDK {scenario}: {}", outcome["finalized_outcome"]);
     }
+    // Separate TypeScript processes share one durable nonce store for the same agent key.
+    let concurrent_a = dir.join("concurrent/S1");
+    let concurrent_b = dir.join("concurrent/S6");
+    let before = h.receiver.view_account().await?.balance.as_yoctonear();
+    let (a, b) = tokio::join!(
+        run_sdk(&h, "S1", concurrent_a.to_str().unwrap(), false),
+        run_sdk(&h, "S6", concurrent_b.to_str().unwrap(), false)
+    );
+    ensure!(a?["finalized_outcome"] == "succeeded");
+    ensure!(b?["finalized_outcome"] == "succeeded");
+    ensure!(h.receiver.view_account().await?.balance.as_yoctonear() - before == 2);
+    println!("SDK concurrent processes: both distinct payments finalized");
     let failed = run_sdk(&h, "S10", dir.join("failed-target").to_str().unwrap(), true).await?;
     ensure!(
         failed["finalized_outcome"] == "failed"

@@ -2,8 +2,9 @@
 import { createHash, createPrivateKey, sign, type KeyObject } from 'node:crypto';
 import bs58 from 'bs58';
 import { z } from 'zod';
-import { decodePublicKey, publicKeyFromKeyObject, accountIdSchema, publicKeySchema, hex32Schema, amountSchema, revisionSchema, supportedCallSchema, type AgentRegistration, type PolicySnapshot, type PolicyProvider, type Action } from '@counterparty-guard/shared';
+import { decodePermit, isPermitTimeValid, decodePublicKey, publicKeyFromKeyObject, accountIdSchema, publicKeySchema, hex32Schema, amountSchema, revisionSchema, supportedCallSchema, type AgentRegistration, type PolicySnapshot, type PolicyProvider, type Action } from '@counterparty-guard/shared';
 import type { Approval, ChainReader, ExecuteCall, GuardConfig, GuardSigner, SignedTransaction, VaultState } from './index.js';
+import { SigningUnavailable } from './index.js';
 
 export class NearRpc {
   constructor(readonly url: string, readonly network: 'sandbox'|'testnet') {
@@ -80,21 +81,38 @@ export function keyFromNearSecret(secret: string): KeyObject {
   if (!Buffer.from(decodePublicKey(publicKeyFromKeyObject(key))).equals(Buffer.from(bytes.subarray(32)))) throw new Error('Invalid NEAR secret public half');
   return key;
 }
+export interface TransactionNonceStore {
+  /** Atomic and durable across all processes using this access key. */
+  reserveNonce(key: string, finalizedNonce: bigint): boolean;
+}
 export class NearRestrictedSigner implements GuardSigner {
-  constructor(private readonly rpc: NearRpc,private readonly config: GuardConfig,private readonly key: KeyObject) {
+  constructor(private readonly rpc: NearRpc,private readonly config: GuardConfig,private readonly key: KeyObject,
+    private readonly nonces: TransactionNonceStore, private readonly nonceWaitMs = 10_000) {
     if (publicKeyFromKeyObject(key) !== config.agentPublicKey) throw new Error('Signer key mismatch');
+    if (!Number.isSafeInteger(nonceWaitMs) || nonceWaitMs < 0 || nonceWaitMs > 10_000) throw new Error('Invalid nonce wait');
   }
   async sign(call: ExecuteCall): Promise<SignedTransaction> {
     const c = this.config;
     if (call.signer_id !== c.agentAccountId || call.public_key !== c.agentPublicKey || call.receiver_id !== c.vaultId || call.method_name !== 'execute' || call.deposit_yocto !== '0' || call.gas_tgas !== 300) throw new Error('Restricted signer call mismatch');
     await this.rpc.assertNetwork();
-    const access = z.object({nonce:z.number().int().safe(),block_hash:z.string(),permission:z.object({FunctionCall:z.object({allowance:amountSchema,receiver_id:accountIdSchema,method_names:z.tuple([z.literal('execute')])})})}).parse(await this.rpc.call('query',{
-      request_type:'view_access_key',finality:'final',account_id:c.agentAccountId,public_key:c.agentPublicKey}));
-    if (access.permission.FunctionCall.receiver_id !== c.vaultId || BigInt(access.permission.FunctionCall.allowance) === 0n) throw new Error('Invalid/exhausted restricted key');
-    const blockHash = bs58.decode(access.block_hash); if(blockHash.length !== 32) throw new Error('Invalid block hash');
     const args = Buffer.from(JSON.stringify(call.args)); if(args.length > 12000) throw new Error('Oversized execute call');
+    const permit = decodePermit(Buffer.from(call.args.permit_base64,'base64'));
+    const deadline = Date.now() + this.nonceWaitMs;
+    let nonce: bigint;
+    let blockHash: Uint8Array;
+    for (;;) {
+      const access = z.object({nonce:z.number().int().safe().nonnegative(),block_hash:z.string(),permission:z.object({FunctionCall:z.object({allowance:amountSchema,receiver_id:accountIdSchema,method_names:z.tuple([z.literal('execute')])})})}).parse(await this.rpc.call('query',{
+        request_type:'view_access_key',finality:'final',account_id:c.agentAccountId,public_key:c.agentPublicKey}));
+      if (access.permission.FunctionCall.receiver_id !== c.vaultId || BigInt(access.permission.FunctionCall.allowance) === 0n) throw new Error('Invalid/exhausted restricted key');
+      blockHash = bs58.decode(access.block_hash); if(blockHash.length !== 32) throw new Error('Invalid block hash');
+      if (!isPermitTimeValid(permit,Date.now())) throw new SigningUnavailable('Permit expired while waiting to sign');
+      nonce = BigInt(access.nonce) + 1n;
+      if (this.nonces.reserveNonce(`${c.network}:${c.agentAccountId}:${c.agentPublicKey}`,BigInt(access.nonce))) break;
+      if (Date.now() >= deadline) throw new SigningUnavailable('Prior access-key transaction is not finalized; reconcile it before retrying');
+      await new Promise(resolve=>setTimeout(resolve,Math.min(100,deadline-Date.now())));
+    }
     // Transaction V0 Borsh: signer, key enum/raw, nonce, receiver, block, action vector.
-    const bytes = Buffer.concat([string(c.agentAccountId),Buffer.from([0]),decodePublicKey(c.agentPublicKey),integer(BigInt(access.nonce)+1n,8),string(c.vaultId),blockHash,
+    const bytes = Buffer.concat([string(c.agentAccountId),Buffer.from([0]),decodePublicKey(c.agentPublicKey),integer(nonce,8),string(c.vaultId),blockHash,
       integer(1n,4),Buffer.from([2]),string('execute'),vector(args),integer(300_000_000_000_000n,8),integer(0n,16)]);
     const digest = createHash('sha256').update(bytes).digest();
     return {bytes:Buffer.concat([bytes,Buffer.from([0]),sign(null,digest,this.key)]),transactionId:bs58.encode(digest)};

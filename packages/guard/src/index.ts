@@ -13,6 +13,8 @@ export class WarningApprovalRequired extends Error {
 export class ExecutionUncertain extends Error {
   constructor(readonly permitHash: string) { super(`Execution may be in flight: reconcile ${permitHash}; do not mint another permit`); }
 }
+/** An adapter may use this only when it guarantees no signature was produced. */
+export class SigningUnavailable extends Error {}
 export interface AssessmentClient {
   check(request: CheckRequest): Promise<CheckResponse>;
   revalidate(checkId: string): Promise<{status: string}>;
@@ -54,7 +56,7 @@ export interface AttemptStore {
   claim(attempt: Attempt): Promise<boolean>;
   get(requestId: string): Promise<Attempt | null>;
   put(attempt: Attempt): Promise<void>;
-  /** Only release a claim before the signer boundary has been entered. */
+  /** Release only before signing, including an adapter's guaranteed SigningUnavailable result. */
   release(requestId: string): Promise<void>;
 }
 /** For tests/single-process tools. Production should use a durable transactional store. */
@@ -120,8 +122,14 @@ export class Guard {
       if (!isPermitTimeValid(p,this.now())) throw new Error('Permit expired before signing');
       // Durably lock the retry BEFORE invoking an adapter that could sign then fail.
       attempt.state='signing'; await this.attempts.put(attempt); enteredSigner = true;
-      const transaction = await this.signer.sign({signer_id:cfg.agentAccountId, public_key:cfg.agentPublicKey,
-        receiver_id:cfg.vaultId,method_name:'execute',args:vaultArguments(permit),deposit_yocto:'0',gas_tgas:300});
+      let transaction: SignedTransaction;
+      try {
+        transaction = await this.signer.sign({signer_id:cfg.agentAccountId, public_key:cfg.agentPublicKey,
+          receiver_id:cfg.vaultId,method_name:'execute',args:vaultArguments(permit),deposit_yocto:'0',gas_tgas:300});
+      } catch (error) {
+        if (error instanceof SigningUnavailable) enteredSigner = false;
+        throw error;
+      }
       attempt.signed=true; attempt.state='signed'; attempt.transactionId=transaction.transactionId; await this.attempts.put(attempt);
       // Lock before the network boundary; submitted is set only after RPC acknowledges it.
       attempt.state='submitting'; await this.attempts.put(attempt);
@@ -160,5 +168,5 @@ export class HttpAssessmentClient implements AssessmentClient {
   async revalidate(id: string): Promise<{status:string}> { return z.object({status:z.string()}).parse(await this.post(`/v1/checks/${encodeURIComponent(id)}/revalidate`)); }
 }
 export { SqliteAttemptStore } from './attempt-store.js';
-export { NearRpc, NearChainReader, NearRestrictedSigner, keyFromNearSecret } from './near.js';
+export { NearRpc, NearChainReader, NearRestrictedSigner, keyFromNearSecret, type TransactionNonceStore } from './near.js';
 export { NearExecutionProvider, type ExecutionBinding } from './finality.js';
