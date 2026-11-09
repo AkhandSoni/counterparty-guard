@@ -22,6 +22,18 @@
       ],
       "@counterparty-guard/scoring": [
         "packages/scoring/src/index.ts"
+      ],
+      "@counterparty-guard/shared/demo": [
+        "packages/shared/src/demo.ts"
+      ],
+      "@counterparty-guard/reputation": [
+        "packages/reputation/src/index.ts"
+      ],
+      "@counterparty-guard/fixtures": [
+        "fixtures/index.ts"
+      ],
+      "@counterparty-guard/shared/browser": [
+        "packages/shared/src/browser.ts"
       ]
     }
   },
@@ -32,11 +44,23 @@
     "packages/scoring/**/*.ts",
     "scripts/person-a/**/*.ts",
     "tests/integration/**/*.ts",
-    "vitest*.ts"
+    "vitest*.ts",
+    "packages/reputation/**/*.ts",
+    "fixtures/**/*.ts",
+    "scripts/demo/**/*.ts",
+    "tests/regression/**/*.ts"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "artifacts"
+    "artifacts",
+    "**/dist/**",
+    "**/dist-ts/**",
+    "apps/api/tests/**",
+    "packages/reputation/tests/**",
+    "packages/shared/tests/**",
+    "scripts/demo/tests/**",
+    "fixtures/tests/**",
+    "tests/regression/**"
   ]
 }

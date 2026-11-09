@@ -1,0 +1,30 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "outDir": "./dist-ts",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "paths": {
+      "@counterparty-guard/shared": [
+        "../../packages/shared/src/browser.ts"
+      ],
+      "@counterparty-guard/shared/demo": [
+        "../../packages/shared/src/demo.ts"
+      ]
+    },
+    "noEmit": true,
+    "noUncheckedIndexedAccess": false
+  },
+  "include": [
+    "src/**/*",
+    "tests/**/*"
+  ],
+  "references": [],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "dist-ts"
+  ]
+}

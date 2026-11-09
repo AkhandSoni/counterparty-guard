@@ -1,0 +1,48 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": false,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "paths": {
+      "@counterparty-guard/shared": [
+        "packages/shared/src/index.ts"
+      ],
+      "@counterparty-guard/providers": [
+        "packages/providers/src/index.ts"
+      ],
+      "@counterparty-guard/scoring": [
+        "packages/scoring/src/index.ts"
+      ],
+      "@counterparty-guard/shared/demo": [
+        "packages/shared/src/demo.ts"
+      ],
+      "@counterparty-guard/reputation": [
+        "packages/reputation/src/index.ts"
+      ],
+      "@counterparty-guard/fixtures": [
+        "fixtures/index.ts"
+      ],
+      "@counterparty-guard/shared/browser": [
+        "packages/shared/src/browser.ts"
+      ],
+      "@/*": [
+        "apps/web/src/*"
+      ]
+    }
+  },
+  "include": [
+    "apps/api/tests/**/*.ts",
+    "packages/reputation/tests/**/*.ts",
+    "packages/shared/tests/**/*.ts",
+    "scripts/demo/tests/**/*.ts",
+    "fixtures/tests/**/*.ts",
+    "tests/regression/**/*.ts"
+  ],
+  "exclude": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/dist-ts/**"
+  ]
+}

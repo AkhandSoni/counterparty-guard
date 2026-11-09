@@ -4,6 +4,8 @@ import { publicKeyFromKeyObject, signPermit, type ReceiverEvidence } from '@coun
 import { createApp } from './app.js';
 import { loadConfig } from './config.js';
 import { GuardStore } from './storage/store.js';
+import { ReportRepository, createReputationProvider } from '@counterparty-guard/reputation';
+import { createReportsPlugin } from './routes/reports.js';
 
 /** Standalone local fixture process. Live service assembly injects B/C-owned adapters separately. */
 async function start(): Promise<void> {
@@ -29,12 +31,9 @@ async function start(): Promise<void> {
       },
     },
     policyProvider: { async getPolicy() { return { ...config.fixture.policy, observed_at: Date.now() }; } },
-    reputationProvider: { async getReputation(network, accountId) {
-      const reputation = config.fixture.reputations.find(value => value.network === network && value.account_id === accountId);
-      if (!reputation) throw new Error('Fixture reputation not configured');
-      return { ...reputation, observed_at: Date.now() };
-    } },
-    ...(config.fixture.reviewer_credential_hash ? { reviewerCredentialHash: config.fixture.reviewer_credential_hash } : {}),
+    reputationProvider: createReputationProvider(new ReportRepository(store.database)),
+    reportPlugin: createReportsPlugin(),
+    reviewerCredentialHash: config.fixture.reviewer_credential_hash,
   });
   let closing = false;
   const close = async (): Promise<void> => {

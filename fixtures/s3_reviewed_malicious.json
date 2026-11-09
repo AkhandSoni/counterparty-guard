@@ -1,0 +1,93 @@
+{
+  "id": "S3",
+  "name": "Reviewed Malicious Receiver",
+  "description": "Synthetic offline assessment fixture. Receiver has active reviewed blocklist entry for confirmed drainer activity; Guard SDK refuses before signing (signed=false, submitted=false).",
+  "security_invariant": "Active blocklist entry confirmed by authenticated reviewer strictly prohibits permit creation; transaction must be aborted before signing or dispatch with zero value transferred.",
+  "network": "testnet",
+  "proposed_action": {
+    "kind": "transfer_near",
+    "receiver_id": "known-drainer.testnet",
+    "amount_yocto": "50000000000000000000000"
+  },
+  "expected_decision": "block",
+  "expected_reason_codes": [
+    "ACTIVE_BLOCK",
+    "REVIEWED_BLOCKLIST_MATCH"
+  ],
+  "expected_signed": false,
+  "expected_submitted": false,
+  "expected_balance_delta_yocto": "0",
+  "initial_state": {
+    "receiver_id": "known-drainer.testnet",
+    "account_age_days": 38,
+    "interaction_count": 3,
+    "first_seen_timestamp": "2026-10-01T10:00:00Z",
+    "is_contract": true,
+    "current_code_hash": "7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e",
+    "is_blocked": true,
+    "block_reason": "Reviewed synthetic drain pattern matching exploit synthetic fixture case S3; active blocklist entry added at revision #7.",
+    "blocklist_revision": 7,
+    "reputation_risk_points": 100,
+    "raw_report_count": 1,
+    "effective_report_weight": 1.0,
+    "circular_activity_detected": false,
+    "circular_activity_score": 0,
+    "coverage": {
+      "accounts_visited": 8,
+      "edges_traversed": 14,
+      "truncated": false,
+      "window_days": 7
+    },
+    "reports": [
+      {
+        "report_id": "00000000-0000-4000-8000-000000000003",
+        "network": "testnet",
+        "accused_account_id": "known-drainer.testnet",
+        "reporter_id": "victim-dao.testnet",
+        "reporter_public_key": "ed25519:6E8nnukpNm466w7mUo1k74mZvd7qQ8b5QG41u16wG5r3",
+        "category": "drainer",
+        "description": "Drained 150 NEAR via unauthorized transfer after spoofing vendor invoice callback.",
+        "transaction_references": [
+          "9ZpQ7wK4xYz1j8mQp9v2x1drain_tx"
+        ],
+        "evidence_content_hashes": [
+          "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        ],
+        "contract_code_hash": "7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e",
+        "status": "reviewed",
+        "issued_at": 1792947600000,
+        "expires_at": 1824483600000,
+        "nonce": "nonce_rep_drainer_001",
+        "signature": "fixture:unsigned-example-not-valid-for-intake",
+        "dependence_group_id": null,
+        "created_at": 1792947600000
+      }
+    ],
+    "review_history": [
+      {
+        "review_id": "00000000-0000-4000-8000-000000000301",
+        "report_id": "00000000-0000-4000-8000-000000000003",
+        "reviewer_id": "sec-ops.testnet",
+        "status": "reviewed",
+        "decision": "active_block",
+        "scope": "both",
+        "reason": "Reviewed synthetic drain pattern matching exploit synthetic fixture case S3",
+        "blocklist_entry_id": "entry_drainer_001",
+        "blocklist_revision": 7,
+        "reviewed_at": 1792951200000
+      }
+    ],
+    "funding_connections": [
+      {
+        "source": "mixer-gateway.testnet",
+        "target": "known-drainer.testnet",
+        "amount_yocto": "25000000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "High-risk unverified mixer gateway proxy funding"
+      }
+    ],
+    "canonical_permit": null,
+    "independent_successful_counterparties": 0
+  }
+}

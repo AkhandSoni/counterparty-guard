@@ -1,0 +1,41 @@
+{
+  "id": "S8",
+  "name": "Permit Replay / Mutation",
+  "description": "Synthetic offline assessment fixture. Mutated permit parameters or replayed nonce rejected on-chain by vault contract; value transfer prevented.",
+  "security_invariant": "Permits are single-use, non-reusable cryptographic commitments; any parameter tampering (e.g. amount alteration or replayed nonce) is rejected on-chain by the vault contract.",
+  "network": "testnet",
+  "proposed_action": {
+    "kind": "transfer_near",
+    "receiver_id": "merchant.testnet",
+    "amount_yocto": "5000000000000000000000000"
+  },
+  "expected_decision": "vault_rejection",
+  "expected_reason_codes": [],
+  "expected_signed": false,
+  "expected_submitted": false,
+  "expected_balance_delta_yocto": "0",
+  "initial_state": {
+    "receiver_id": "merchant.testnet",
+    "account_age_days": 182,
+    "interaction_count": 42,
+    "first_seen_timestamp": "2026-05-10T08:00:00Z",
+    "is_contract": false,
+    "current_code_hash": null,
+    "is_blocked": false,
+    "reputation_risk_points": 90,
+    "original_permit_amount_yocto": "50000000000000000000000",
+    "mutated_amount_yocto": "5000000000000000000000000",
+    "replayed_nonce": "nonce_s1_78a9c0",
+    "vault_error_code": "INVALID_PERMIT_NONCE_REPLAYED",
+    "rejection_reason": "Vault contract on-chain execution reverted: permit nonce already consumed or parameter hash mismatch.",
+    "coverage": {
+      "accounts_visited": 5,
+      "edges_traversed": 8,
+      "truncated": false,
+      "window_days": 7
+    },
+    "reports": [],
+    "canonical_permit": null,
+    "independent_successful_counterparties": 0
+  }
+}

@@ -1,7 +1,7 @@
-name: Person A checks
+name: API and reputation checks
 on:
   push:
-    branches: [main, 'feat/a-*']
+    branches: [main, 'feat/a-*', 'feat/c-*']
   pull_request:
 permissions:
   contents: read
@@ -29,3 +29,6 @@ jobs:
       - run: pnpm verify:interfaces
       - run: pnpm setup:local
       - run: pnpm smoke:api
+      - run: pnpm build
+      - run: pnpm demo:attack -- --log-file artifacts/demo/attack.jsonl
+      - run: pnpm demo:all -- --scenario S1 --json --log-file artifacts/demo/allow.jsonl

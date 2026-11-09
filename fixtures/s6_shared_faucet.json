@@ -1,0 +1,65 @@
+{
+  "id": "S6",
+  "name": "Shared Common Faucet Control",
+  "description": "Synthetic offline assessment fixture. Unrelated accounts sharing common testnet faucet funder (faucet.testnet); faucet exemption registry active; full independent weights preserved with no penalty.",
+  "security_invariant": "Legitimate shared infrastructure (such as official testnet faucets or exchanges) must be exempted from Sybil clustering and must NEVER penalize innocent counterparties.",
+  "network": "testnet",
+  "proposed_action": {
+    "kind": "transfer_near",
+    "receiver_id": "user-b.testnet",
+    "amount_yocto": "50000000000000000000000"
+  },
+  "expected_decision": "allow",
+  "expected_reason_codes": [
+    "COMMON_FAUCET_EXEMPTED"
+  ],
+  "expected_signed": false,
+  "expected_submitted": false,
+  "expected_balance_delta_yocto": "0",
+  "initial_state": {
+    "receiver_id": "user-b.testnet",
+    "account_age_days": 29,
+    "interaction_count": 8,
+    "first_seen_timestamp": "2026-10-10T14:00:00Z",
+    "is_contract": false,
+    "current_code_hash": null,
+    "is_blocked": false,
+    "reputation_risk_points": 10,
+    "raw_report_count": 0,
+    "effective_report_weight": 0.0,
+    "circular_activity_detected": false,
+    "circular_activity_score": 0,
+    "coverage": {
+      "accounts_visited": 15,
+      "edges_traversed": 22,
+      "truncated": false,
+      "window_days": 7
+    },
+    "reports": [],
+    "faucet_exemption": {
+      "is_exempted": true,
+      "faucet_account_id": "faucet.testnet",
+      "label": "Official NEAR Testnet Faucet",
+      "exemption_type": "faucet",
+      "notes": "Funding edges connected to faucet.testnet are exempted from clustering. Legitimate shared testnet infrastructure is never penalized."
+    },
+    "funding_connections": [
+      {
+        "source": "faucet.testnet",
+        "target": "user-b.testnet",
+        "amount_yocto": "10000000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": true,
+        "description": "Official testnet faucet distribution"
+      }
+    ],
+    "canonical_permit": {
+      "permit_hash": "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+      "verdict": "allow",
+      "nonce": "nonce_s6_faucet0",
+      "policy_revision": 7,
+      "blocklist_revision": 7
+    },
+    "independent_successful_counterparties": 15
+  }
+}

@@ -1,6 +1,6 @@
 import tseslint from 'typescript-eslint';
 export default tseslint.config(
- { ignores: ['node_modules/**', '**/node_modules/**', 'dist/**', 'coverage/**', 'artifacts/**'] },
+ { ignores: ['node_modules/**', '**/node_modules/**', '**/dist/**', '**/dist-ts/**', 'coverage/**', 'artifacts/**'] },
  ...tseslint.configs.recommended,
- { files: ['**/*.ts'], rules: { '@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_', varsIgnorePattern: '^_'}] } }
+ { files: ['**/*.ts', '**/*.tsx'], rules: { '@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_', varsIgnorePattern: '^_'}] } }
 );

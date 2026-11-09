@@ -1,6 +1,6 @@
 # Person A handoff
 
-Owner: Medhansh. Delivery date: 8 November 2026. Implementation branch: `feat/a-core`. Repository: [public Counterparty Guard](https://github.com/medhansh-19/counterparty-guard). Application work is limited to A-owned files; B/C-owned directories and report routes remain for their contributors' PRs.
+Owner: Medhansh. Delivery date: 8 November 2026. Implementation branch: `feat/a-core`. Repository: [public Counterparty Guard](https://github.com/medhansh-19/counterparty-guard). Application work is limited to A-owned files; C report/reputation integration landed later in PR #2; see docs/person-c-handoff.md for current composition. B enforcement remains pending.
 
 ## Delivered
 
@@ -27,11 +27,11 @@ The browser-only shared export was also bundled with the installed pinned esbuil
 
 `pnpm test:e2e`, `pnpm demo:attack` and `pnpm demo:all` were executed and correctly exited1 naming the absent B/C integrations. They are unavailable gates, not passing tests. Their future real runners remain C/B work; no mocked chain/attack evidence was generated in their place.
 
-## B/C action items before full integration
+## Original B/C action items before full integration
 
 B must confirm the proposed fixture method/argument contract, compare every TS/Rust vector and rejection case, inject current deployed policy and verified finality adapters, integrate guard pre-sign revalidation/execution-state checks, and prove independent owner approval, restricted key, replay, promise accounting and spend races in a real sandbox. A will review B's actual implementation when its PR is available; that review is not claimed here.
 
-C must implement signed reports/reviewer audit, dependent-evidence grouping/common-faucet controls, justified independent activity credit, report migrations/plugin, dashboard and actual demo runner. C reviews A's scoring/provenance after integrating its own evidence outputs. A's empty report state is a visibly synthetic local fixture, not a live moderation service.
+At the original A handoff, C still needed signed reports/reviewer audit, dependent-evidence grouping/common-faucet controls, report migrations/plugin, dashboard and the demo runner. PR #2 now supplies those modules and fixture assessment logs. Live independence inference remains conservative. C reviews A's scoring/provenance after integrating its own evidence outputs. A's empty report state is a visibly synthetic local fixture, not a live moderation service.
 
 All contributors must then run S1–S10, recovery/allowance and fresh-checkout gates, archive actual transactions/receipts/balance deltas, and disclose the code/blocklist race. OutLayer and real-model integration remain stretch; `attestation=null` throughout current output.
 

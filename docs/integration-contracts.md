@@ -46,3 +46,11 @@ The UI can use authenticated check/read/evidence/receiver/execution/revalidation
 - C provides report/reviewer/dependence/faucet controls and the real dashboard/demo runner.
 - A integrates actual adapters and reviews B; B reviews C; C reviews A's scoring/provenance.
 - Run complete S1–S10 and recovery/allowance drill only when those implementations exist. Keep all source/chain modes and actual references labelled. No tests in A's scope establish hardware attestation or a model's prompt-injection susceptibility.
+
+## C integration status after PR #2 remediation
+
+`createReportsPlugin()` mounts C’s routes on the core store with A’s reviewer authentication and receiver invalidation callback. The standalone server uses this plugin and `createReputationProvider(repository, clock)`. All report SQL is appended to the shared manifest; the old embedded migration runner is retained for isolated package tests only. Production and tests use the existing pinned better-sqlite3 driver.
+
+The adapter reads scoped active blocks, caps unresolved evidence-backed report contributions, groups reused evidence and computes bounded circular features from retained normalized transfer edges. No extra network fetch occurs inside the scorer. Live independence credit is deliberately zero until a justified independence inference is provided; fixture activity is explicitly synthetic. Graph size, shared funders, reports and faucet exemptions cannot manufacture positive trust.
+
+Offline dashboard/fixture transport types are isolated under `@counterparty-guard/shared/demo`; they are not accepted by authorization code. They issue no signed permits. The connected dashboard uses the canonical browser-safe schemas and reports exact service results. B must still validate the actual permit codec/vectors and supply independent owner approval, restricted-key enforcement and finalized operation evidence before any chain execution is claimed.

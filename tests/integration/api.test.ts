@@ -545,7 +545,7 @@ describe('finalized code identity history', () => {
     finalize(f, delayed, '11', initialNow + 3);
     const originalSnapshot = f.store.check(first.check_id, registrations[0]!.agent_id)?.snapshot;
     // Reconstruct the previous schema while retaining actual issued checks/receipts.
-    f.store.database.exec("DROP INDEX executions_history_height; ALTER TABLE executions DROP COLUMN finalized_block_height; DELETE FROM schema_migrations WHERE id='core-002'");
+    f.store.database.exec("DROP INDEX executions_history_height; ALTER TABLE executions DROP COLUMN finalized_block_height; DELETE FROM schema_migrations WHERE position>=1");
     const upgraded = new GuardStore(path);
     cleanups.push(() => upgraded.close());
     expect(upgraded.history(registrations[0]!, 'receiver.testnet', 'fixture')).toEqual({ finalized_successes: 3, approved_code_identity: 'code-v2' });

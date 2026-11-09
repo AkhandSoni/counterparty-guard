@@ -10,16 +10,18 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.c-tests.json && pnpm --filter web typecheck",
     "test": "vitest run --config vitest.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:e2e": "tsx scripts/person-a/unavailable.ts e2e",
-    "demo:attack": "tsx scripts/person-a/unavailable.ts attack",
-    "demo:all": "tsx scripts/person-a/unavailable.ts demo",
+    "demo:attack": "tsx scripts/demo/run-attack.ts",
+    "demo:all": "tsx scripts/demo/run-all.ts",
     "dev:api": "tsx apps/api/src/server.ts",
     "setup:local": "tsx scripts/person-a/setup-local.ts",
     "smoke:api": "tsx scripts/person-a/smoke.ts",
-    "verify:interfaces": "tsx scripts/person-a/verify-interfaces.ts"
+    "verify:interfaces": "tsx scripts/person-a/verify-interfaces.ts",
+    "dev:web": "pnpm --filter web dev",
+    "build": "pnpm --filter web build"
   },
   "devDependencies": {
     "@types/better-sqlite3": "9.6.0",
@@ -33,6 +35,9 @@
   "dependencies": {
     "fastify": "5.12.8",
     "zod": "4.6.7",
-    "better-sqlite3": "13.0.3"
+    "better-sqlite3": "13.0.3",
+    "@counterparty-guard/reputation": "workspace:*",
+    "@counterparty-guard/fixtures": "workspace:*",
+    "@counterparty-guard/shared": "workspace:*"
   }
 }

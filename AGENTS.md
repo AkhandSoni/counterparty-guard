@@ -2,7 +2,7 @@
 
 ## Purpose and current state
 
-Build **Counterparty Guard**, the NEAR AI Security & Defense counterparty service described in [PLAN.md](PLAN.md). Person A backend code is now present. Read `docs/person-a-handoff.md` for implemented scope and actual checks. B/C-owned functionality and cross-language/chain integration gates remain pending until their PRs land. Proposed paths below do not imply every component exists.
+Build **Counterparty Guard**, the NEAR AI Security & Defense counterparty service described in [PLAN.md](PLAN.md). Person A backend and C reputation/report/dashboard integration are now present. Read `docs/person-a-handoff.md` for implemented scope and actual checks. B-owned enforcement and cross-language/chain integration gates remain pending. Read `docs/person-c-handoff.md` for C’s actual integration limits. Proposed paths below do not imply every component exists.
 
 The user requested a detailed plan and project instructions split equally across three people. That request authorizes these documents. Begin application implementation when the user requests it; do not interpret a planning-only turn as a request to deploy contracts or spend funds.
 

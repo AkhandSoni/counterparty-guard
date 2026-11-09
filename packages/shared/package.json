@@ -6,9 +6,13 @@
   "exports": {
     ".": "./src/index.ts",
     "./browser": "./src/browser.ts",
-    "./schemas": "./src/schemas.ts"
+    "./schemas": "./src/schemas.ts",
+    "./demo": "./src/demo.ts"
   },
   "dependencies": {
-    "zod": "4.6.7"
+    "zod": "4.6.7",
+    "borsh": "2.0.0",
+    "bs58": "6.0.0",
+    "tweetnacl": "1.0.3"
   }
 }

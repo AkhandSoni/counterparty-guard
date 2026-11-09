@@ -1,0 +1,67 @@
+{
+  "id": "S10",
+  "name": "Supported Method Call",
+  "description": "Synthetic offline assessment fixture. Contract call targeting explicitly configured and allowlisted fixture method (\"claim_service\") can be assessed; unsupported method is rejected.",
+  "security_invariant": "Smart contract interactions are constrained to explicitly configured method boundaries; authorized calls proceed with deterministic permits while unallowlisted methods are refused.",
+  "network": "testnet",
+  "proposed_action": {
+    "kind": "contract_call",
+    "receiver_id": "fixture.testnet",
+    "method_name": "accept_memo",
+    "args_base64": "eyJtZW1vIjoic3ludGhldGljIGRlbW8ifQ==",
+    "attached_deposit_yocto": "10000000000000000000000",
+    "gas_tgas": 30
+  },
+  "expected_decision": "allow",
+  "expected_reason_codes": [],
+  "expected_signed": false,
+  "expected_submitted": false,
+  "expected_balance_delta_yocto": "0",
+  "initial_state": {
+    "receiver_id": "fixture.testnet",
+    "account_age_days": 110,
+    "interaction_count": 33,
+    "first_seen_timestamp": "2026-07-20T10:00:00Z",
+    "is_contract": true,
+    "current_code_hash": "4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b",
+    "supported_methods": [
+      "claim_service",
+      "verify_status"
+    ],
+    "unsupported_methods": [
+      "drain_funds",
+      "emergency_withdraw"
+    ],
+    "is_blocked": false,
+    "reputation_risk_points": 5,
+    "raw_report_count": 0,
+    "effective_report_weight": 0.0,
+    "circular_activity_detected": false,
+    "circular_activity_score": 0,
+    "coverage": {
+      "accounts_visited": 6,
+      "edges_traversed": 11,
+      "truncated": false,
+      "window_days": 7
+    },
+    "reports": [],
+    "funding_connections": [
+      {
+        "source": "registrar.testnet",
+        "target": "fixture.testnet",
+        "amount_yocto": "10000000000000000000000000",
+        "hop_level": 1,
+        "is_faucet": false,
+        "description": "Fixture service contract deployer seed"
+      }
+    ],
+    "canonical_permit": {
+      "permit_hash": "4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b",
+      "verdict": "allow",
+      "nonce": "nonce_s10_method_ok",
+      "policy_revision": 7,
+      "blocklist_revision": 7
+    },
+    "independent_successful_counterparties": 15
+  }
+}
